@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Search - Travel Planner</title>
+    <link rel="stylesheet" href="hotel.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Find Your Perfect Hotel</h1>
+
+        <!-- Popular Destinations -->
+        <div class="popular-destinations">
+            <h2>Popular Destinations</h2>
+            <div class="destination-cards">
+                <div class="destination-card" data-city="Mumbai" data-lat="19.0760" data-lng="72.8777">
+                    <img src="https://images.unsplash.com/photo-1562979314-bee7453e911c?w=400" alt="Mumbai">
+                    <div class="destination-info">
+                        <h3>Mumbai</h3>
+                        <p>Gateway of India, Beaches & Culture</p>
+                    </div>
+                </div>
+                <div class="destination-card" data-city="Delhi" data-lat="28.6139" data-lng="77.2090">
+                    <img src="https://images.unsplash.com/photo-1587474260584-136574528ed5?w=400" alt="Delhi">
+                    <div class="destination-info">
+                        <h3>Delhi</h3>
+                        <p>History, Food & Architecture</p>
+                    </div>
+                </div>
+                <div class="destination-card" data-city="Bangalore" data-lat="12.9716" data-lng="77.5946">
+                    <img src="https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=400" alt="Bangalore">
+                    <div class="destination-info">
+                        <h3>Bangalore</h3>
+                        <p>Tech Hub & Garden City</p>
+                    </div>
+                </div>
+                <div class="destination-card" data-city="Goa" data-lat="15.2993" data-lng="74.1240">
+                    <img src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=400" alt="Goa">
+                    <div class="destination-info">
+                        <h3>Goa</h3>
+                        <p>Beaches, Parties & Relaxation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form id="hotelSearchForm" class="search-form">
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <input type="text" id="destination" name="destination" required placeholder="Where are you going?">
+            </div>
+
+            <div class="dates">
+                <div class="form-group">
+                    <label for="checkIn">Check-in Date</label>
+                    <input type="date" id="checkIn" name="checkIn" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="checkOut">Check-out Date</label>
+                    <input type="date" id="checkOut" name="checkOut" required>
+                </div>
+            </div>
+
+            <div class="room-options">
+                <div class="form-group">
+                    <label for="rooms">Rooms</label>
+                    <select id="rooms" name="rooms" required>
+                        <option value="1">1 Room</option>
+                        <option value="2">2 Rooms</option>
+                        <option value="3">3 Rooms</option>
+                        <option value="4">4 Rooms</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="adults">Adults</label>
+                    <select id="adults" name="adults" required>
+                        <option value="1">1 Adult</option>
+                        <option value="2">2 Adults</option>
+                        <option value="3">3 Adults</option>
+                        <option value="4">4 Adults</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="children">Children</label>
+                    <select id="children" name="children">
+                        <option value="0">No Children</option>
+                        <option value="1">1 Child</option>
+                        <option value="2">2 Children</option>
+                        <option value="3">3 Children</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="price-range">
+                    <label>Price Range</label>
+                    <div class="radio-group">
+                        <input type="radio" id="economy" name="priceRange" value="economy" checked>
+                        <label for="economy">Economy</label>
+
+                        <input type="radio" id="moderate" name="priceRange" value="moderate">
+                        <label for="moderate">Moderate</label>
+
+                        <input type="radio" id="luxury" name="priceRange" value="luxury">
+                        <label for="luxury">Luxury</label>
+                    </div>
+                </div>
+
+                <div class="rating-filter">
+                    <label>Rating</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="rating3" name="rating" value="3">
+                        <label for="rating3">3+ Stars</label>
+
+                        <input type="checkbox" id="rating4" name="rating" value="4">
+                        <label for="rating4">4+ Stars</label>
+
+                        <input type="checkbox" id="rating5" name="rating" value="5">
+                        <label for="rating5">5 Stars</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="search-btn">Search Hotels</button>
+        </form>
+
+        <div class="results-container">
+            <div id="map" class="map-container"></div>
+            <div id="searchResults" class="hotel-results"></div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Book Your Stay</h2>
+            
+            <div id="bookingSteps">
+                <!-- Step 1: Room Selection -->
+                <div class="booking-step" id="step1">
+                    <h3>Select Your Room</h3>
+                    <div id="roomOptions" class="room-options-grid"></div>
+                    <button class="next-btn" onclick="nextStep(2)">Continue to Guest Details</button>
+                </div>
+
+                <!-- Step 2: Guest Information -->
+                <div class="booking-step" id="step2" style="display: none;">
+                    <h3>Guest Information</h3>
+                    <form id="guestForm">
+                        <div class="form-group">
+                            <label for="guestName">Full Name</label>
+                            <input type="text" id="guestName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="guestEmail">Email</label>
+                            <input type="email" id="guestEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="guestPhone">Phone</label>
+                            <input type="tel" id="guestPhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="specialRequests">Special Requests</label>
+                            <textarea id="specialRequests"></textarea>
+                        </div>
+                        <button type="button" class="back-btn" onclick="prevStep(1)">Back</button>
+                        <button type="button" class="next-btn" onclick="nextStep(3)">Continue to Payment</button>
+                    </form>
+                </div>
+
+                <!-- Step 3: Payment -->
+                <div class="booking-step" id="step3" style="display: none;">
+                    <h3>Payment Details</h3>
+                    <div class="booking-summary" id="bookingSummary"></div>
+                    <form id="paymentForm">
+                        <div class="payment-methods">
+                            <label>
+                                <input type="radio" name="paymentMethod" value="card" checked>
+                                Credit/Debit Card
+                            </label>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="upi">
+                                UPI
+                            </label>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="netbanking">
+                                Net Banking
+                            </label>
+                        </div>
+
+                        <div id="cardPayment" class="payment-section">
+                            <div class="form-group">
+                                <label for="cardNumber">Card Number</label>
+                                <input type="text" id="cardNumber" pattern="[0-9]{16}" placeholder="1234 5678 9012 3456" required>
+                            </div>
+                            <div class="card-details">
+                                <div class="form-group">
+                                    <label for="expiryDate">Expiry Date</label>
+                                    <input type="text" id="expiryDate" placeholder="MM/YY" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cvv">CVV</label>
+                                    <input type="password" id="cvv" pattern="[0-9]{3,4}" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cardName">Name on Card</label>
+                                <input type="text" id="cardName" required>
+                            </div>
+                        </div>
+
+                        <div id="upiPayment" class="payment-section" style="display: none;">
+                            <div class="form-group">
+                                <label for="upiId">UPI ID</label>
+                                <input type="text" id="upiId" placeholder="username@bank">
+                            </div>
+                        </div>
+
+                        <div id="netbankingPayment" class="payment-section" style="display: none;">
+                            <div class="form-group">
+                                <label for="bankSelect">Select Bank</label>
+                                <select id="bankSelect">
+                                    <option value="">Select a bank</option>
+                                    <option value="sbi">State Bank of India</option>
+                                    <option value="hdfc">HDFC Bank</option>
+                                    <option value="icici">ICICI Bank</option>
+                                    <option value="axis">Axis Bank</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="terms-conditions">
+                            <label>
+                                <input type="checkbox" id="termsAccept" required>
+                                I accept the terms and conditions
+                            </label>
+                        </div>
+
+                        <button type="button" class="back-btn" onclick="prevStep(2)">Back</button>
+                        <button type="submit" class="submit-btn">Confirm Booking</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="hotel.js"></script>
+</body>
+</html>

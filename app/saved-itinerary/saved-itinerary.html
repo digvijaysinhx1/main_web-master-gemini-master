@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Saved Itineraries</title>
+    <link rel="stylesheet" href="saved-itinerary.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My Saved Itineraries</h1>
+            <div id="loginStatus" class="login-status"></div>
+        </header>
+
+        <div class="itineraries-container">
+            <div id="itinerariesList" class="itineraries-grid">
+                <!-- Itineraries will be loaded here -->
+            </div>
+            <div id="loadingSpinner" class="loading-spinner hidden">
+                <div class="spinner"></div>
+                <p>Loading your itineraries...</p>
+            </div>
+            <div id="noItineraries" class="no-items hidden">
+                <p>You haven't saved any itineraries yet.</p>
+                <a href="/create-itinerary" class="create-btn">Create New Itinerary</a>
+            </div>
+        </div>
+    </div>
+    <script src="saved-itinerary.js"></script>
+</body>
+</html>

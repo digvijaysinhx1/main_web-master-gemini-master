@@ -1,0 +1,53 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+
+    "airports": {
+      ".read": true,
+      ".write": true
+    },
+
+    "users": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+
+    "bookings": {
+      "$bookingId": {
+        ".read": "auth != null && data.child('userId').val() === auth.uid",
+        ".write": "auth != null && newData.child('userId').val() === auth.uid"
+      }
+    },
+
+    "hotel_bookings": {
+      "$bookingId": {
+        ".read": "auth != null && data.child('userId').val() === auth.uid",
+        ".write": "auth != null && newData.child('userId').val() === auth.uid"
+      }
+    },
+
+    "flights": {
+      ".read": true,
+      ".write": false
+    },
+
+    "seats": {
+      "$flightId": {
+        ".read": true,
+        "$seatNumber": {
+          ".write": "auth != null"
+        }
+      }
+    },
+
+    "itineraries": {
+      "$itineraryId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}

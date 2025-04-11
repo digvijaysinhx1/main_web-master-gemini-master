@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Itinerary - Travel Planner</title>
+    <link rel="stylesheet" href="create-itinerary.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Create Your Travel Itinerary</h1>
+        <form id="itineraryForm">
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <input type="text" id="destination" placeholder="Enter your destination" required>
+            </div>
+
+            <div class="form-group dates">
+                <div class="date-input">
+                    <label for="startDate">Start Date</label>
+                    <input type="text" id="startDate" class="calendar-input" placeholder="Select start date" required>
+                    <i class="calendar-icon">📅</i>
+                </div>
+                <div class="date-input">
+                    <label for="endDate">End Date</label>
+                    <input type="text" id="endDate" class="calendar-input" placeholder="Select end date" required>
+                    <i class="calendar-icon">📅</i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Number of Travelers</label>
+                <div class="traveler-options">
+                    <label class="traveler-option">
+                        <input type="radio" name="travelers" value="solo" required>
+                        <span class="option-label">Solo</span>
+                    </label>
+                    <label class="traveler-option">
+                        <input type="radio" name="travelers" value="couple">
+                        <span class="option-label">Couple</span>
+                    </label>
+                    <label class="traveler-option">
+                        <input type="radio" name="travelers" value="family">
+                        <span class="option-label">Family</span>
+                    </label>
+                    <label class="traveler-option">
+                        <input type="radio" name="travelers" value="group">
+                        <span class="option-label">Group</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Budget Range</label>
+                <div class="budget-options">
+                    <label class="budget-option">
+                        <input type="radio" name="budget" value="economy" required>
+                        <span class="option-label">
+                            <span class="budget-title">Economy</span>
+                            <span class="budget-amount">₹500 - ₹1500</span>
+                            <span class="budget-desc">Basic accommodations and essential experiences</span>
+                        </span>
+                    </label>
+                    <label class="budget-option">
+                        <input type="radio" name="budget" value="standard">
+                        <span class="option-label">
+                            <span class="budget-title">Standard</span>
+                            <span class="budget-amount">₹1500 - ₹3000</span>
+                            <span class="budget-desc">Comfortable stays and popular attractions</span>
+                        </span>
+                    </label>
+                    <label class="budget-option">
+                        <input type="radio" name="budget" value="luxury">
+                        <span class="option-label">
+                            <span class="budget-title">Luxury</span>
+                            <span class="budget-amount">₹3000+</span>
+                            <span class="budget-desc">Premium accommodations and exclusive experiences</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="button" id="generateBtn" class="submit-btn">Generate Itinerary</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="create-itinerary.js"></script>
+</body>
+</html>

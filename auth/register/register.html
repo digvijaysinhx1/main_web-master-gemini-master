@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sign Up Page</title>
+        <link rel="stylesheet" href="/auth/register/register.css">   
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+        <script src="/auth/register/register.js" type="module" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="signup-card">
+                <img src="/auth/assets/logo.jpg" alt="Logo" class="logo">
+                <h1>Join to access everything</h1>
+
+                <form id="signupForm">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" placeholder="Full Name" required>
+                    
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Email" required>
+                    
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Phone Number" pattern="[+]?[0-9]{10,13}" title="Please enter a valid phone number">
+                    
+                    <label for="password">Create Password</label>
+                    <input type="password" id="password" placeholder="Password" required>
+                    
+                    <button type="submit" id="submit">Sign up</button>
+                </form>
+
+                <div class="divider">
+                    <hr><span>or</span><hr>
+                </div>
+
+                <button id="google-signin" class="google-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google logo" class="google-icon">
+                    Sign up with Google
+                </button>
+
+                <div class="divider">
+                    <hr><span>Already a member?</span><hr>
+                </div>
+
+                <p class="login-link"> <a href="http://127.0.0.1:3000/auth/login/login.html">Login</a> using your Globetrial account.</p>
+            </div>
+        </div>
+    </body>
+</html>

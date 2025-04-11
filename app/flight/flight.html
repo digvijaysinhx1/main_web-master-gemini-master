@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Search - Travel Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="flight.css">
+    
+    <!-- Google Places API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_dyM2dfau2b6vXtoWtR04mlNbTD38cso&libraries=places"></script>
+    
+    <style>
+        .airport-input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .airport-code {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2563eb;
+            min-width: 50px;
+        }
+
+        .airport-details {
+            flex: 1;
+        }
+
+        .airport-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .airport-location {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .error {
+            color: #dc2626;
+            text-align: center;
+        }
+
+        /* Existing styles */
+        .suggestion:hover {
+            background-color: #f3f4f6;
+        }
+        
+        /* Seat Map Styles */
+        .seat {
+            width: 40px;
+            height: 40px;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .seat.business {
+            background-color: #f0f9ff;
+            border-color: #3b82f6;
+        }
+        
+        .seat.economy {
+            background-color: #f9fafb;
+            border-color: #9ca3af;
+        }
+        
+        .seat.disabled {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .seat.selected {
+            background-color: #3b82f6;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Booking Process Styles */
+        .booking-step {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .booking-step.hidden {
+            display: none;
+        }
+
+        /* Form Styles */
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Payment Form Styles */
+        #cardNumber, #expiryDate, #cvv {
+            font-family: monospace;
+            letter-spacing: 0.1em;
+        }
+
+        /* Seat Map Container */
+        #seatMap {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            max-width: 360px;
+            margin: 0 auto;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+        }
+
+        /* Seat Legend */
+        .seat-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .legend-color {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Calendar Styles */
+        .calendar-wrapper {
+            position: relative;
+        }
+
+        .calendar {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 50;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            width: 300px;
+            display: none;
+        }
+
+        .calendar.show {
+            display: block;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+
+        .calendar-day {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+
+        .calendar-day:hover {
+            background-color: #f3f4f6;
+        }
+
+        .calendar-day.selected {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .calendar-day.disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Itinerary Styles */
+        .itinerary {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .itinerary-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .itinerary-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e5e7eb;
+        }
+
+        .itinerary-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .itinerary-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            border: 2px solid white;
+        }
+
+        .itinerary-item:last-child {
+            padding-bottom: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h1 class="text-2xl font-bold mb-6">Search Flights</h1>
+            
+            <form id="flightSearchForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- From -->
+                    <div class="relative airport-input-container">
+                        <label for="origin" class="block text-sm font-medium text-gray-700 mb-2">From</label>
+                        <input type="text" id="origin" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter city or airport"
+                               autocomplete="off">
+                        <div id="originSuggestions" class="suggestions hidden absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"></div>
+                    </div>
+                    
+                    <!-- To -->
+                    <div class="relative airport-input-container">
+                        <label for="destination" class="block text-sm font-medium text-gray-700 mb-2">To</label>
+                        <input type="text" id="destination" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter city or airport"
+                               autocomplete="off">
+                        <div id="destinationSuggestions" class="suggestions hidden absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Departure Date -->
+                    <div class="calendar-wrapper">
+                        <label for="departureDate" class="block text-sm font-medium text-gray-700 mb-2">Departure Date</label>
+                        <input type="text" id="departureDate" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                               readonly>
+                        <div class="calendar" id="departureDateCalendar">
+                            <div class="calendar-header">
+                                <button class="text-gray-600 hover:text-gray-800" onclick="prevMonth('departure')">&lt;</button>
+                                <span class="font-semibold" id="departureDateMonth"></span>
+                                <button class="text-gray-600 hover:text-gray-800" onclick="nextMonth('departure')">&gt;</button>
+                            </div>
+                            <div class="calendar-grid" id="departureDateGrid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Return Date -->
+                    <div class="calendar-wrapper">
+                        <label for="returnDate" class="block text-sm font-medium text-gray-700 mb-2">Return Date (Optional)</label>
+                        <input type="text" id="returnDate" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                               readonly>
+                        <div class="calendar" id="returnDateCalendar">
+                            <div class="calendar-header">
+                                <button class="text-gray-600 hover:text-gray-800" onclick="prevMonth('return')">&lt;</button>
+                                <span class="font-semibold" id="returnDateMonth"></span>
+                                <button class="text-gray-600 hover:text-gray-800" onclick="nextMonth('return')">&gt;</button>
+                            </div>
+                            <div class="calendar-grid" id="returnDateGrid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Number of Passengers -->
+                    <div>
+                        <label for="adults" class="block text-sm font-medium text-gray-700 mb-2">Passengers</label>
+                        <input type="number" id="adults" min="1" value="1" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+                    Search Flights
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div class="bg-white p-5 rounded-lg flex items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                <div class="text-gray-700">Searching...</div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="searchResults" class="mt-8"></div>
+
+        <!-- Booking Process Sections -->
+        <div id="bookingProcess" class="hidden mt-8">
+            <!-- Step 1: Personal Information -->
+            <div id="personalInfo" class="booking-step">
+                <h2 class="text-2xl font-bold mb-6">Personal Information</h2>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <form id="personalInfoForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2">First Name</label>
+                                <input type="text" id="firstName" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Last Name</label>
+                                <input type="text" id="lastName" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Email</label>
+                                <input type="email" id="email" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Phone</label>
+                                <input type="tel" id="phone" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                        </div>
+                        <button type="submit" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Continue to Seat Selection</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Step 2: Seat Selection -->
+            <div id="seatSelection" class="booking-step hidden">
+                <h2 class="text-2xl font-bold mb-6">Select Your Seat</h2>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4">Class Selection</h3>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="class" value="economy" checked class="mr-2">
+                                Economy
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="class" value="business" class="mr-2">
+                                Business
+                            </label>
+                        </div>
+                    </div>
+                    <div class="seat-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f0f9ff; border: 1px solid #3b82f6;"></div>
+                            Business
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f9fafb; border: 1px solid #9ca3af;"></div>
+                            Economy
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #3b82f6;"></div>
+                            Selected
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-6 gap-2 mb-6" id="seatMap">
+                        <!-- Seats will be dynamically generated here -->
+                    </div>
+                    <div class="flex justify-between mt-6">
+                        <button class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600" onclick="showBookingStep('personalInfo')">Back</button>
+                        <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" onclick="showBookingStep('payment')">Continue to Payment</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Payment -->
+            <div id="payment" class="booking-step hidden">
+                <h2 class="text-2xl font-bold mb-6">Payment Details</h2>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <form id="paymentForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="block text-gray-700 mb-2">Card Number</label>
+                                <input type="text" id="cardNumber" required pattern="[0-9\s]{13,19}" maxlength="19" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Expiry Date</label>
+                                <input type="text" id="expiryDate" required placeholder="MM/YY" maxlength="5" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">CVV</label>
+                                <input type="text" id="cvv" required pattern="[0-9]{3,4}" maxlength="4" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-gray-700 mb-2">Card Holder Name</label>
+                                <input type="text" id="cardName" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600" onclick="showBookingStep('seatSelection')">Back</button>
+                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Pay Now</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Step 4: Confirmation -->
+            <div id="confirmation" class="booking-step hidden">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div id="successMessage" class="hidden">
+                        <div class="text-center">
+                            <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <h2 class="text-2xl font-bold text-green-600 mb-4">Booking Confirmed!</h2>
+                            <p class="text-gray-600 mb-4">Your booking reference number: <span id="bookingReference" class="font-bold"></span></p>
+                            <div id="bookingDetails" class="text-left max-w-md mx-auto"></div>
+                            <button onclick="window.location.href='/dashboard'" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Return to Home</button>
+                        </div>
+                    </div>
+                    <div id="failureMessage" class="hidden">
+                        <div class="text-center">
+                            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            <h2 class="text-2xl font-bold text-red-600 mb-4">Payment Failed</h2>
+                            <p class="text-gray-600 mb-6">There was an error processing your payment. Please try again.</p>
+                            <button onclick="showBookingStep('payment')" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Retry Payment</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itinerary Section -->
+        <div id="itinerary" class="itinerary hidden">
+            <h2 class="text-2xl font-bold mb-6">Your Travel Itinerary</h2>
+            <div class="itinerary-timeline">
+                <div class="itinerary-item">
+                    <h3 class="font-semibold text-lg">Outbound Flight</h3>
+                    <div id="outboundDetails" class="mt-2 text-gray-600"></div>
+                </div>
+                <div id="returnFlightItem" class="itinerary-item hidden">
+                    <h3 class="font-semibold text-lg">Return Flight</h3>
+                    <div id="returnDetails" class="mt-2 text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+        
+    <!-- Initialize Firebase -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBm4FwFhQyW17r_8Waa6SjQGJlCm8DG9GU",
+            authDomain: "globetrail-clg-project.firebaseapp.com",
+            projectId: "globetrail-clg-project",
+            storageBucket: "globetrail-clg-project.appspot.com",
+            messagingSenderId: "90557063561",
+            appId: "1:90557063561:web:f93540b20d00ce4e084158",
+            databaseURL: "https://globetrail-clg-project-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <script src="flight.js"></script>
+</body>
+</html>

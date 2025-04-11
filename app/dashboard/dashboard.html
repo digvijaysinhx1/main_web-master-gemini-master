@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Travel Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="dashboard.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/11.3.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.3.0/firebase-auth-compat.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script type="text/javascript" src="dashboard.js" defer></script>
+</head>
+
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">Travel Planner</div>
+        <div class="nav-links">
+            <div class="dropdown">
+                <p class="dropdown-toggle">Trips</p>
+                <div class="dropdown-menu">
+                    <a href="/create-itinerary">Start a new trip</a>
+                    <a href="/saved-itinerary">Saved Trips</a>
+                </div>
+            </div>
+            <div class="right-links">
+                <a href="/flight">Flights</a>
+                <a href="/hotel">Hotels</a> <!-- Updated link with hotels URL -->
+            </div>
+
+            <button id="toggleDarkMode" class="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="profile-section">
+                <button id="profileBtn" class="profile-button">
+                    <img id="userProfilePic" class="profile-pic"
+                        src="https://as1.ftcdn.net/v2/jpg/03/16/12/52/1000_F_316125289_3GTL3Yd9JVQz3Nw50uAEEkOpX6GvK0LE.jpg"
+                        alt="Profile">
+                    <span id="userEmail" class="user-email"></span>
+                </button>
+                <div id="profileDropdown" class="profile-dropdown hidden">
+                    <a href="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+                    <button id="logoutBtn" class="dropdown-item logout"><i class="fas fa-sign-out-alt"></i>
+                        Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero dashboard-hero">
+        <div class="hero-content">
+            <h1>Plan your Trip now</h1>
+            <p>Plan your Trip with AI and Book the best flights & hotels now</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <section class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Create Account</h3>
+                    <p>Sign up for free and set up your travel preferences.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Plan Itinerary</h3>
+                    <p>Use our tools to create your perfect travel schedule.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Make Bookings</h3>
+                    <p>Book flights, hotels, and activities with ease.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Enjoy Trip</h3>
+                    <p>Experience your journey with confidence and ease.</p>
+                </div>
+            </div>
+        </section>
+        <section class="trip">
+            <div class="trip-content">
+                <h2>Plan your kind of trip</h2>
+                <p>Get your personalised trip plan according to your preferences</p>
+                <button class="trip-btn"><a href="/create-itinerary">Start a Trip with ai</a></button>
+            </div>
+        </section>
+
+        <section class="suggetion">
+
+            <div class="dest-suggestion-txt">
+                <h2>Your Dream Destinations</h2>
+            </div>
+
+            <div class="scroll">
+                <div class="dest-suggestion-txt">
+                    <h3>Top destinations for your next holiday</h3>
+                </div>
+                <div class="horizontal-scroll">
+                    <ul class="place-list">
+                        <li class="place city1"
+                            style="background-image: url('https://kashiyatra.in/wp-content/uploads/2023/04/ghats-of-varanasi.jpg');">
+                            <p>Varanasi, uttar pradesh</p>
+                        </li>
+                        <li class="place city2"
+                            style="background-image: url('https://kashiyatra.in/wp-content/uploads/2023/04/ghats-of-varanasi.jpg');">
+                            <p>Varanasi, uttar pradesh</p>
+                        </li>
+                        <li class="place city3"
+                            style="background-image: url('https://kashiyatra.in/wp-content/uploads/2023/04/ghats-of-varanasi.jpg');">
+                            <p>Varanasi, uttar pradesh</p>
+                        </li>
+                        <li class="place city4"
+                            style="background-image: url('https://kashiyatra.in/wp-content/uploads/2023/04/ghats-of-varanasi.jpg');">
+                            <p>Varanasi, uttar pradesh</p>
+                        </li>
+                        <li class="place city5"
+                            style="background-image: url('https://kashiyatra.in/wp-content/uploads/2023/04/ghats-of-varanasi.jpg');">
+                            <p>Varanasi, uttar pradesh</p>
+                        </li>
+                        <li class="place city6"
+                            style="background-image: url('https://kashiyatra.in/wp-content/uploads/2023/04/ghats-of-varanasi.jpg');">
+                            <p>Varanasi, uttar pradesh</p>
+                        </li>
+                        <li class="place city7"
+                            style="background-image: url('https://kashiyatra.in/wp-content/uploads/2023/04/ghats-of-varanasi.jpg');">
+                            <p>Varanasi, uttar pradesh</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Travel Planner</h3>
+                <p>Making travel planning easy and enjoyable.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="/create-itinerary">Create Itinerary</a>
+                <a href="/flight">Search Flights</a>
+                <a href="/hotels">Find Hotels</a>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: info@travelplanner.com</p>
+                <p>Phone: +1 234 567 890</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Travel Planner. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Dark Mode Toggle
+        document.getElementById('toggleDarkMode').addEventListener('click', function () {
+            document.body.classList.toggle('dark');
+        });
+
+        // Profile Dropdown
+        document.getElementById('profileBtn').addEventListener('click', function () {
+            document.getElementById('profileDropdown').classList.toggle('hidden');
+        });
+
+        // Firebase Auth (Placeholder)
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            alert('Login function to be implemented!');
+        });
+
+        document.getElementById('googleLogin').addEventListener('click', function () {
+            alert('Google login to be implemented!');
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            alert('Logout function to be implemented!');
+        });
+    </script>
+</body>
+
+</html>
