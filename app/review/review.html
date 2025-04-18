@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reviews</title>
+  <link rel="stylesheet" href="review.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Customer Reviews</h1>
+
+    <div class="review-form">
+      <h2>Leave a Review</h2>
+      <input type="text" id="name" placeholder="Your Name" required />
+      <textarea id="message" placeholder="Your Review" required></textarea>
+      <button onclick="submitReview()">Submit</button>
+    </div>
+
+    <div class="reviews-list" id="reviewsList">
+      <!-- Reviews will show here -->
+    </div>
+  </div>
+
+  <!-- Firebase (CDN version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- Your custom JS -->
+  <script src="review.js"></script>
+</body>
+</html>

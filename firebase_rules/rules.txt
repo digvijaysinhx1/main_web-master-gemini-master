@@ -48,6 +48,14 @@
         ".read": true,
         ".write": true
       }
+    },
+
+    "reviews": {
+      ".read": true,
+      ".write": true,
+      "$reviewId": {
+        ".validate": "newData.hasChildren(['name', 'message', 'timestamp']) && newData.child('name').isString() && newData.child('message').isString() && newData.child('timestamp').isString()"
+      }
     }
   }
 }

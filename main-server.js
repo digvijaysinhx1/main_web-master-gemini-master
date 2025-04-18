@@ -767,6 +767,10 @@ expressApp.use('/saved-itinerary', express.static(path.join(__dirname, 'app/save
     setHeaders: setMimeTypes
 }));
 
+expressApp.use('/review', express.static(path.join(__dirname, 'app/review'), {
+    setHeaders: setMimeTypes
+}));
+
 // Authentication middleware
 const requireAuth = (req, res, next) => {
     if (!req.session || !req.session.userId) {
@@ -882,6 +886,10 @@ expressApp.get('/hotel', requireAuth, (req, res) => {
 
 expressApp.get('/saved-itinerary', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'saved-itinerary', 'saved-itinerary.html'));
+});
+
+expressApp.get('/review', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'review', 'review.html'));
 });
 
 // Hotel search endpoint

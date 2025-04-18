@@ -918,7 +918,7 @@
         "to": "...",
         "departure": "...",
         "isReturn": "..."
-      },  
+      },
       "passengerDetails": {
         "firstName": "...",
         "lastName": "...",
@@ -934,11 +934,19 @@
         "currency": "INR",
         "cardLastFour": "1234",
         "paymentMethod": "creditCard",
-      "paymentStatus": "completed",
-      "bookingStatus": "confirmed",
-      "createdAt": "2025-04-07T14:45:24+05:30",
-      "userId": "user123"
+        "paymentStatus": "completed",
+        "bookingStatus": "confirmed",
+        "createdAt": "2025-04-07T14:45:24+05:30",
+        "userId": "user123"
       }
+    }
+  },
+  "reviews": {
+    "review1": {
+      "userId": "user123",
+      "name": "Alice",
+      "message": "Absolutely loved the trip planner! Super easy to use.",
+      "timestamp": "4/14/2025, 3:45 PM"
     }
   }
 }
