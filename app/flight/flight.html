@@ -304,10 +304,10 @@
                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                readonly>
                         <div class="calendar" id="departureDateCalendar">
-                            <div class="calendar-header">
-                                <button class="text-gray-600 hover:text-gray-800" onclick="prevMonth('departure')">&lt;</button>
+                            <div class="calendar-header flex justify-between items-center mb-4">
+                                <button class="text-gray-600 hover:text-gray-800" onclick="flightSearchInstance.prevMonth('departure')">&lt;</button>
                                 <span class="font-semibold" id="departureDateMonth"></span>
-                                <button class="text-gray-600 hover:text-gray-800" onclick="nextMonth('departure')">&gt;</button>
+                                <button class="text-gray-600 hover:text-gray-800" onclick="flightSearchInstance.nextMonth('departure')">&gt;</button>
                             </div>
                             <div class="calendar-grid" id="departureDateGrid"></div>
                         </div>
@@ -320,10 +320,10 @@
                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                readonly>
                         <div class="calendar" id="returnDateCalendar">
-                            <div class="calendar-header">
-                                <button class="text-gray-600 hover:text-gray-800" onclick="prevMonth('return')">&lt;</button>
+                            <div class="calendar-header flex justify-between items-center mb-4">
+                                <button class="text-gray-600 hover:text-gray-800" onclick="flightSearchInstance.prevMonth('return')">&lt;</button>
                                 <span class="font-semibold" id="returnDateMonth"></span>
-                                <button class="text-gray-600 hover:text-gray-800" onclick="nextMonth('return')">&gt;</button>
+                                <button class="text-gray-600 hover:text-gray-800" onclick="flightSearchInstance.nextMonth('return')">&gt;</button>
                             </div>
                             <div class="calendar-grid" id="returnDateGrid"></div>
                         </div>
@@ -459,27 +459,29 @@
 
             <!-- Step 4: Confirmation -->
             <div id="confirmation" class="booking-step hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div id="successMessage" class="hidden">
-                        <div class="text-center">
-                            <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <h2 class="text-2xl font-bold text-green-600 mb-4">Booking Confirmed!</h2>
-                            <p class="text-gray-600 mb-4">Your booking reference number: <span id="bookingReference" class="font-bold"></span></p>
-                            <div id="bookingDetails" class="text-left max-w-md mx-auto"></div>
-                            <button onclick="window.location.href='/dashboard'" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Return to Home</button>
+                <div id="successMessage" class="hidden">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold text-green-600 mb-4">Booking Confirmed! 🎉</h2>
+                        <p class="text-gray-600 mb-4">Your booking reference: <strong id="bookingReference"></strong></p>
+                        <div id="bookingDetails" class="bg-gray-50 rounded-lg p-6 mb-6 text-left">
+                            <!-- Booking details will be populated by JavaScript -->
                         </div>
+                        <button onclick="window.location.reload()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                            Book Another Flight
+                        </button>
                     </div>
-                    <div id="failureMessage" class="hidden">
-                        <div class="text-center">
-                            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                            <h2 class="text-2xl font-bold text-red-600 mb-4">Payment Failed</h2>
-                            <p class="text-gray-600 mb-6">There was an error processing your payment. Please try again.</p>
-                            <button onclick="showBookingStep('payment')" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Retry Payment</button>
-                        </div>
+                </div>
+                <div id="failureMessage" class="hidden">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold text-red-600 mb-4">Payment Failed</h2>
+                        <p class="text-gray-600 mb-6">There was an error processing your payment. Please try again.</p>
+                        <button onclick="showBookingStep('payment')" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Retry Payment</button>
                     </div>
                 </div>
             </div>
@@ -522,6 +524,6 @@
         firebase.initializeApp(firebaseConfig);
     </script>
 
-    <script src="flight.js"></script>
+    <script type="module" src="flight.js"></script>
 </body>
 </html>

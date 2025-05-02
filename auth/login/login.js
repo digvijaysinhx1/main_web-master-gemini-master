@@ -1,8 +1,12 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
+
+
+
+
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -87,6 +91,15 @@ async function createServerSession(email, firebaseUser) {
 // Google Sign In function
 async function signInWithGoogle() {
     try {
+         // Add loading indicator while signing in
+         const loadingIndicator = document.createElement('div');
+         loadingIndicator.className = 'text-center py-4';
+         loadingIndicator.innerHTML = `
+             <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+             <p class="mt-2 text-gray-600">Signing you in...</p>
+         `;
+         document.getElementById('google-signin').parentNode.insertBefore(loadingIndicator, document.getElementById('google-signin'));
+
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
         console.log("Google sign in successful!");
@@ -102,6 +115,12 @@ async function signInWithGoogle() {
     } catch (error) {
         console.error("Google sign in error:", error);
         alert("Failed to sign in with Google: " + error.message);
+    } finally {
+        // Remove loading indicator
+        const loadingIndicator = document.querySelector('.text-center.py-4');
+        if (loadingIndicator) {
+            loadingIndicator.remove();
+        }
     }
 }
 
@@ -121,6 +140,15 @@ submit.addEventListener("click", async function (event) {
         alert("Invalid email format. Please enter a valid email.");
         return;
     }
+
+    // Add loading indicator while logging in
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'text-center py-4';
+    loadingIndicator.innerHTML = `
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <p class="mt-2 text-gray-600">Logging you in...</p>
+    `;
+    submit.parentNode.insertBefore(loadingIndicator, submit);
 
     try {
         // Firebase authentication
@@ -151,6 +179,12 @@ submit.addEventListener("click", async function (event) {
             default:
                 alert("Login failed: " + error.message);
         }
+    } finally {
+        // Remove loading indicator
+        const loadingIndicator = document.querySelector('.text-center.py-4');
+        if (loadingIndicator) {
+            loadingIndicator.remove();
+        }
     }
 });
 
@@ -160,5 +194,61 @@ if (googleSignInBtn) {
     googleSignInBtn.addEventListener("click", (e) => {
         e.preventDefault();
         signInWithGoogle();
+    });
+}
+
+// Forgot Password functionality with Modal
+const forgotPasswordLink = document.getElementById('forgot-password');
+const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+const sendResetEmailBtn = document.getElementById('send-reset-email');
+const closeModalBtn = document.getElementById('close-modal');
+const resetEmailInput = document.getElementById('reset-email');
+
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        forgotPasswordModal.style.display = 'flex'; // Show modal
+    });
+}
+
+if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
+        forgotPasswordModal.style.display = 'none'; // Close modal
+        resetEmailInput.value = ''; // Clear input
+    });
+}
+
+if (sendResetEmailBtn) {
+    sendResetEmailBtn.addEventListener('click', async () => {
+        const email = resetEmailInput.value.trim();
+
+        if (!email) {
+            alert("Email is required to reset password.");
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            alert("Invalid email format. Please enter a valid email.");
+            return;
+        }
+
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert("Password reset email sent! Please check your inbox.");
+            forgotPasswordModal.style.display = 'none'; // Close modal
+            resetEmailInput.value = ''; // Clear input
+        } catch (error) {
+            console.error("Password reset error:", error);
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    alert("No account found with this email.");
+                    break;
+                case 'auth/invalid-email':
+                    alert("Invalid email address. Please try again.");
+                    break;
+                default:
+                    alert("Error sending password reset email: " + error.message);
+            }
+        }
     });
 }

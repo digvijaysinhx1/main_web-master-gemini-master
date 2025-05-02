@@ -14,7 +14,32 @@ class FlightSearch {
             departure: new Date(),
             return: new Date()
         };
-        
+
+        // Initialize booking data
+        this.currentBooking = {
+            departureDate: null,
+            returnDate: null,
+            selectedOrigin: null,
+            selectedDestination: null,
+            passengers: 1,
+            class: 'economy'
+        };
+
+        // Initialize calendars
+        this.currentMonth = new Date();
+        this.returnMonth = new Date();
+
+        // Make instance available globally for event handlers
+        window.flightSearchInstance = this;
+
+        // Bind calendar navigation methods to the instance
+        this.nextMonth = this.nextMonth.bind(this);
+        this.prevMonth = this.prevMonth.bind(this);
+
+        // Make calendar navigation methods available globally
+        window.nextMonth = this.nextMonth;
+        window.prevMonth = this.prevMonth;
+
         this.setupEventListeners();
         this.initializeAirportAutocomplete();
         this.initializeCalendars();
@@ -23,18 +48,18 @@ class FlightSearch {
 
     setupEventListeners() {
         this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
-        
+
         // Clear selection when input changes
         this.originInput.addEventListener('input', () => {
             this.selectedOrigin = null;
             this.showSuggestions(this.originSuggestions);
         });
-        
+
         this.destinationInput.addEventListener('input', () => {
             this.selectedDestination = null;
             this.showSuggestions(this.destinationSuggestions);
         });
-        
+
         // Hide suggestions when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.airport-input-container')) {
@@ -42,7 +67,7 @@ class FlightSearch {
                 this.hideSuggestions(this.destinationSuggestions);
             }
         });
-        
+
         // Add date validation listener
         document.getElementById('departureDate').addEventListener('change', () => this.validateDate());
     }
@@ -97,7 +122,7 @@ class FlightSearch {
 
             const response = await fetch(`/api/airports/search?keyword=${encodeURIComponent(keyword)}`);
             const data = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(data.error || data.details || 'Failed to fetch airports');
             }
@@ -150,20 +175,20 @@ class FlightSearch {
         const departureDateInput = document.getElementById('departureDate');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const selectedDate = new Date(departureDateInput.value);
         if (selectedDate < today) {
             this.showError('Departure date cannot be in the past');
             departureDateInput.value = '';
             return false;
         }
-        
+
         return true;
     }
 
     async handleFormSubmit(e) {
         e.preventDefault();
-        
+
         if (!this.selectedOrigin || !this.selectedDestination) {
             this.showError('Please select airports from the suggestions');
             return;
@@ -244,37 +269,37 @@ class FlightSearch {
 
         // Map of Indian airlines to their names and SVG icons
         const airlines = {
-            'AI': { 
+            'AI': {
                 name: 'Air India',
                 icon: `<svg class="h-8 w-8" viewBox="0 0 24 24" fill="#e31837">
                     <path d="M12,2L4,12h2l6-8l6,8h2L12,2z M12,22l8-10h-2l-6,8l-6-8H4L12,22z"/>
                 </svg>`
             },
-            'UK': { 
+            'UK': {
                 name: 'Vistara',
                 icon: `<svg class="h-8 w-8" viewBox="0 0 24 24" fill="#4b286d">
                     <path d="M21,16V8a2,2,0,0,0-2-2H5A2,2,0,0,0,3,8v8a2,2,0,0,0,2,2H19A2,2,0,0,0,21,16z"/>
                 </svg>`
             },
-            '6E': { 
+            '6E': {
                 name: 'IndiGo',
                 icon: `<svg class="h-8 w-8" viewBox="0 0 24 24" fill="#0B2343">
                     <path d="M3,3H21V21H3V3M12,7A5,5,0,1,1,7,12,5,5,0,0,1,12,7Z"/>
                 </svg>`
             },
-            'SG': { 
+            'SG': {
                 name: 'SpiceJet',
                 icon: `<svg class="h-8 w-8" viewBox="0 0 24 24" fill="#CC0000">
                     <path d="M12,2L4,12h2l6-8l6,8h2L12,2z M4,12h16v2H4V12z"/>
                 </svg>`
             },
-            'G8': { 
+            'G8': {
                 name: 'GoAir',
                 icon: `<svg class="h-8 w-8" viewBox="0 0 24 24" fill="#0B5BAA">
                     <path d="M21,16V8a2,2,0,0,0-2-2H5A2,2,0,0,0,3,8v8a2,2,0,0,0,2,2H19A2,2,0,0,0,21,16z"/>
                 </svg>`
             },
-            'I5': { 
+            'I5': {
                 name: 'AirAsia India',
                 icon: `<svg class="h-8 w-8" viewBox="0 0 24 24" fill="#FF0000">
                     <path d="M12,2L4,12h2l6-8l6,8h2L12,2z M12,22l8-10h-2l-6,8l-6-8H4L12,22z"/>
@@ -323,7 +348,7 @@ class FlightSearch {
                     airlineName = flight.airline.name || '';
                 }
 
-                const airlineInfo = airlines[airlineCode] || { 
+                const airlineInfo = airlines[airlineCode] || {
                     name: airlineName || flight.airlineName || airlineCode || 'Unknown Airline',
                     icon: defaultAirlineIcon
                 };
@@ -432,7 +457,7 @@ class FlightSearch {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4';
         errorDiv.innerHTML = message;
-        
+
         this.form.insertAdjacentElement('beforebegin', errorDiv);
 
         // Auto-hide after 5 seconds
@@ -447,29 +472,36 @@ class FlightSearch {
     }
 
     handleBooking(flightDetails) {
-        this.currentBooking = {
-            ...flightDetails,
-            passengerDetails: null,
-            selectedSeat: null,
-            isReturn: !!flightDetails.isReturn
-        };
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
 
-        // Show booking process
-        document.getElementById('searchResults').classList.add('hidden');
-        document.getElementById('bookingProcess').classList.remove('hidden');
-        this.showBookingStep('personalInfo');
+            this.currentBooking = {
+                ...flightDetails,
+                passengerDetails: null,
+                selectedSeat: null,
+                isReturn: !!flightDetails.isReturn
+            };
 
-        // Update booking summary
-        const summaryHTML = `
-            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                <h3 class="font-bold mb-2">${flightDetails.isReturn ? 'Return ' : ''}Flight Details</h3>
-                <p><strong>Flight:</strong> ${flightDetails.airline} ${flightDetails.flightNumber}</p>
-                <p><strong>${flightDetails.isReturn ? 'Return ' : ''}Date:</strong> ${new Date(flightDetails.departure).toLocaleDateString()}</p>
-                <p><strong>Route:</strong> ${flightDetails.from} → ${flightDetails.to}</p>
-                <p><strong>Price:</strong> ₹${Math.round(flightDetails.price).toLocaleString('en-IN')}</p>
-            </div>
-        `;
-        document.getElementById('bookingDetails').innerHTML = summaryHTML;
+            // Show booking process
+            document.getElementById('searchResults').classList.add('hidden');
+            document.getElementById('bookingProcess').classList.remove('hidden');
+            this.showBookingStep('personalInfo');
+
+            // Update booking summary
+            const summaryHTML = `
+                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-bold mb-2">${flightDetails.isReturn ? 'Return ' : ''}Flight Details</h3>
+                    <p><strong>Flight:</strong> ${flightDetails.airline} ${flightDetails.flightNumber}</p>
+                    <p><strong>${flightDetails.isReturn ? 'Return ' : ''}Date:</strong> ${new Date(flightDetails.departure).toLocaleDateString()}</p>
+                    <p><strong>Route:</strong> ${flightDetails.from} → ${flightDetails.to}</p>
+                    <p><strong>Price:</strong> ₹${Math.round(flightDetails.price).toLocaleString('en-IN')}</p>
+                </div>
+            `;
+            document.getElementById('bookingDetails').innerHTML = summaryHTML;
+        });
     }
 
     showBookingStep(step) {
@@ -504,7 +536,7 @@ class FlightSearch {
         cardNumber.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
             if (value.length > 16) value = value.slice(0, 16); // Keep only first 16 digits
-            
+
             // Add space after every 4 digits
             const parts = [];
             for (let i = 0; i < value.length; i += 4) {
@@ -554,7 +586,7 @@ class FlightSearch {
         // Payment Form Submission
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             // Validate all fields are filled
             const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
             const expiryDate = document.getElementById('expiryDate').value;
@@ -601,7 +633,7 @@ class FlightSearch {
         const seatMap = document.getElementById('seatMap');
         const rows = 10;
         const seatsPerRow = 6;
-        
+
         // Generate seat grid
         for (let row = 0; row < rows; row++) {
             for (let seat = 0; seat < seatsPerRow; seat++) {
@@ -626,43 +658,64 @@ class FlightSearch {
         if (seatElement) {
             seatElement.classList.add('selected', 'bg-blue-500', 'text-white');
             this.currentBooking.selectedSeat = seatNumber;
+            // Store selected class
+            this.currentBooking.class = document.querySelector('input[name="class"]:checked')?.value || 'economy';
         }
     }
 
     updateSeatMap(classType) {
         const seatMap = document.getElementById('seatMap');
         const seats = seatMap.querySelectorAll('.seat');
-        
+
+        // Store the selected class
+        this.currentBooking.class = classType;
+
         if (classType === 'business') {
             // First 2 rows are business class
             seats.forEach((seat, index) => {
                 if (index < 12) {
                     seat.classList.add('business');
-                    seat.classList.remove('economy');
+                    seat.classList.remove('economy', 'disabled');
                 } else {
                     seat.classList.add('disabled');
+                    seat.classList.remove('selected', 'bg-blue-500', 'text-white');
+                    if (this.currentBooking && this.currentBooking.selectedSeat === seat.textContent) {
+                        this.currentBooking.selectedSeat = null;
+                    }
                 }
             });
         } else {
             // Economy class
             seats.forEach((seat, index) => {
                 if (index >= 12) {
-                    seat.classList.remove('disabled');
+                    seat.classList.remove('disabled', 'business');
                     seat.classList.add('economy');
-                    seat.classList.remove('business');
                 } else {
                     seat.classList.add('disabled');
+                    seat.classList.remove('selected', 'bg-blue-500', 'text-white');
+                    if (this.currentBooking && this.currentBooking.selectedSeat === seat.textContent) {
+                        this.currentBooking.selectedSeat = null;
+                    }
                 }
             });
         }
     }
 
     async processPayment(paymentDetails) {
-        // Simulate payment processing
-        setTimeout(() => {
+        // Show loading state
+        this.showLoading(true);
+        
+        try {
+            // Simulate payment processing
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
             // Generate booking reference
             const bookingReference = 'BK' + Date.now();
-            
+            this.currentBooking.bookingReference = bookingReference;
+
+            // Get selected class
+            const selectedClass = document.querySelector('input[name="class"]:checked')?.value || 'economy';
+
             // Create booking data
             const bookingData = {
                 reference: bookingReference,
@@ -673,13 +726,10 @@ class FlightSearch {
                     from: this.currentBooking.from,
                     to: this.currentBooking.to,
                     departure: this.currentBooking.departure,
-                    isReturn: this.currentBooking.isReturn
+                    class: selectedClass,
+                    seat: this.currentBooking.selectedSeat || 'Not Selected'
                 },
                 passengerDetails: this.currentBooking.passengerDetails,
-                seatDetails: {
-                    seatNumber: this.currentBooking.selectedSeat,
-                    class: document.querySelector('input[name="class"]:checked').value
-                },
                 paymentDetails: {
                     amount: this.currentBooking.price,
                     currency: 'INR',
@@ -690,15 +740,14 @@ class FlightSearch {
             };
 
             // Save to Firebase
-            firebase.auth().onAuthStateChanged(user => {
-                if (user) {
-                    this.saveBookingToFirebase(bookingData);
-                } else {
-                    // Optional: Show a login popup or go to login page
-                    window.location.href = '/app/login.html?redirect=flight';
-                }
-            });
-        }, 2000);
+            await this.saveBookingToFirebase(bookingData);
+            this.showSuccessMessage();
+        } catch (error) {
+            console.error('Payment processing error:', error);
+            this.showFailureMessage();
+        } finally {
+            this.showLoading(false);
+        }
     }
 
     getCardType(cardNumber) {
@@ -714,20 +763,14 @@ class FlightSearch {
 
     async saveBookingToFirebase(bookingData) {
         try {
-            // Check if user is authenticated
-            const user = firebase.auth().currentUser;
-if (!user) {
-    window.location.href = '/app/login/login.html?redirect=flight';
-    return;
-}
-
             // Get reference to the bookings collection
             const bookingsRef = firebase.database().ref('bookings');
-            
+
             // Add user information to booking data
+            const user = firebase.auth().currentUser;
             bookingData.userId = user.uid;
             bookingData.userEmail = user.email;
-            
+
             // Create a new booking entry
             await bookingsRef.child(bookingData.reference).set(bookingData);
 
@@ -755,19 +798,27 @@ if (!user) {
         this.showBookingStep('confirmation');
         document.getElementById('failureMessage').classList.add('hidden');
         document.getElementById('successMessage').classList.remove('hidden');
-        
+
         // Set booking reference
         document.getElementById('bookingReference').textContent = this.currentBooking.bookingReference;
-        
+
         // Show booking details
         const details = document.getElementById('bookingDetails');
         details.innerHTML = `
-            <div class="space-y-2">
+            <div class="space-y-3">
                 <p><strong>Passenger:</strong> ${this.currentBooking.passengerDetails.firstName} ${this.currentBooking.passengerDetails.lastName}</p>
                 <p><strong>Flight:</strong> ${this.currentBooking.airline} ${this.currentBooking.flightNumber}</p>
                 <p><strong>From:</strong> ${this.currentBooking.from}</p>
                 <p><strong>To:</strong> ${this.currentBooking.to}</p>
-                <p><strong>Departure:</strong> ${new Date(this.currentBooking.departure).toLocaleString()}</p>
+                <p><strong>Departure:</strong> ${new Date(this.currentBooking.departure).toLocaleString('en-IN', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</p>
+                <p><strong>Class:</strong> ${this.currentBooking.class.charAt(0).toUpperCase() + this.currentBooking.class.slice(1)}</p>
                 <p><strong>Seat:</strong> ${this.currentBooking.selectedSeat}</p>
                 <p><strong>Amount Paid:</strong> ₹${Math.round(this.currentBooking.price).toLocaleString('en-IN')}</p>
             </div>
@@ -782,30 +833,49 @@ if (!user) {
 
     initializeCalendars() {
         // Initialize departure calendar
-        this.initializeCalendar('departure');
-        
+        this.updateCalendar('departure', this.currentMonth);
+
         // Initialize return calendar
-        this.initializeCalendar('return');
+        this.updateCalendar('return', this.returnMonth);
 
         // Add click listeners to date inputs
-        document.getElementById('departureDate').addEventListener('click', () => this.toggleCalendar('departure'));
-        document.getElementById('returnDate').addEventListener('click', () => this.toggleCalendar('return'));
+        document.getElementById('departureDate')?.addEventListener('click', () => this.toggleCalendar('departure'));
+        document.getElementById('returnDate')?.addEventListener('click', () => this.toggleCalendar('return'));
 
         // Close calendars when clicking outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.calendar-wrapper')) {
+            if (!e.target.closest('.calendar') && !e.target.closest('#departureDate') && !e.target.closest('#returnDate')) {
                 document.querySelectorAll('.calendar').forEach(cal => cal.classList.remove('show'));
             }
         });
     }
 
-    initializeCalendar(type) {
+    nextMonth(type) {
+        if (type === 'departure') {
+            this.currentMonth.setMonth(this.currentMonth.getMonth() + 1);
+            this.updateCalendar('departure', this.currentMonth);
+        } else {
+            this.returnMonth.setMonth(this.returnMonth.getMonth() + 1);
+            this.updateCalendar('return', this.returnMonth);
+        }
+    }
+
+    prevMonth(type) {
+        if (type === 'departure') {
+            this.currentMonth.setMonth(this.currentMonth.getMonth() - 1);
+            this.updateCalendar('departure', this.currentMonth);
+        } else {
+            this.returnMonth.setMonth(this.returnMonth.getMonth() - 1);
+            this.updateCalendar('return', this.returnMonth);
+        }
+    }
+
+    updateCalendar(type, date) {
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                          'July', 'August', 'September', 'October', 'November', 'December'];
-        
-        const today = new Date();
-        const currentMonth = this.currentDate[type].getMonth();
-        const currentYear = this.currentDate[type].getFullYear();
+            'July', 'August', 'September', 'October', 'November', 'December'];
+
+        const currentMonth = date.getMonth();
+        const currentYear = date.getFullYear();
 
         // Update month display
         document.getElementById(`${type}DateMonth`).textContent = `${monthNames[currentMonth]} ${currentYear}`;
@@ -813,9 +883,9 @@ if (!user) {
         // Generate calendar grid
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        
+
         let html = '<div class="calendar-grid">';
-        
+
         // Add day headers
         ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
             html += `<div class="font-semibold text-gray-600">${day}</div>`;
@@ -829,9 +899,9 @@ if (!user) {
         // Add days of month
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(currentYear, currentMonth, day);
-            const isDisabled = date < today;
+            const isDisabled = date < new Date();
             const isSelected = this.formatDate(date) === document.getElementById(`${type}Date`).value;
-            
+
             html += `
                 <div class="calendar-day${isDisabled ? ' disabled' : ''}${isSelected ? ' selected' : ''}"
                      ${!isDisabled ? `onclick="flightSearchInstance.selectDate('${type}', ${day})"` : ''}>
@@ -852,32 +922,22 @@ if (!user) {
 
     selectDate(type, day) {
         const date = new Date(
-            this.currentDate[type].getFullYear(),
-            this.currentDate[type].getMonth(),
+            this.currentMonth.getFullYear(),
+            this.currentMonth.getMonth(),
             day
         );
 
         // Update input field
         document.getElementById(`${type}Date`).value = this.formatDate(date);
-        
+
         // Hide calendar
         document.getElementById(`${type}DateCalendar`).classList.remove('show');
-        
+
         // Validate dates
         this.validateDate();
-        
+
         // Update itinerary if both dates are selected
         this.updateItinerary();
-    }
-
-    prevMonth(type) {
-        this.currentDate[type].setMonth(this.currentDate[type].getMonth() - 1);
-        this.initializeCalendar(type);
-    }
-
-    nextMonth(type) {
-        this.currentDate[type].setMonth(this.currentDate[type].getMonth() + 1);
-        this.initializeCalendar(type);
     }
 
     formatDate(date) {
@@ -894,16 +954,16 @@ if (!user) {
 
         if (departureDate && from && to) {
             document.getElementById('itinerary').classList.remove('hidden');
-            
+
             // Update outbound details
             document.getElementById('outboundDetails').innerHTML = `
                 <p class="mb-1"><i class="fas fa-plane-departure mr-2"></i> From ${from} to ${to}</p>
                 <p class="mb-1"><i class="far fa-calendar mr-2"></i> ${new Date(departureDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })}</p>
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</p>
             `;
 
             // Update return details if return date is selected
@@ -913,11 +973,11 @@ if (!user) {
                 document.getElementById('returnDetails').innerHTML = `
                     <p class="mb-1"><i class="fas fa-plane-arrival mr-2"></i> From ${to} to ${from}</p>
                     <p class="mb-1"><i class="far fa-calendar mr-2"></i> ${new Date(returnDate).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    })}</p>
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })}</p>
                 `;
             } else {
                 returnFlightItem.classList.add('hidden');
@@ -931,6 +991,24 @@ let flightSearchInstance;
 
 document.addEventListener('DOMContentLoaded', () => {
     flightSearchInstance = new FlightSearch();
+    
+    // Make functions globally available
+    window.handleFlightBooking = (event, flightDetails) => {
+        event.preventDefault();
+        if (flightSearchInstance) {
+            flightSearchInstance.handleBooking(flightDetails);
+        } else {
+            console.error('Flight search not initialized');
+        }
+    };
+
+    window.showBookingStep = (step) => {
+        if (flightSearchInstance) {
+            flightSearchInstance.showBookingStep(step);
+        } else {
+            console.error('Flight search not initialized');
+        }
+    };
 });
 
 // Global function to handle flight booking
@@ -953,14 +1031,14 @@ function showBookingStep(step) {
 }
 
 // Global calendar navigation functions
-function prevMonth(type) {
-    if (flightSearchInstance) {
-        flightSearchInstance.prevMonth(type);
-    }
-}
-
 function nextMonth(type) {
     if (flightSearchInstance) {
         flightSearchInstance.nextMonth(type);
+    }
+}
+
+function prevMonth(type) {
+    if (flightSearchInstance) {
+        flightSearchInstance.prevMonth(type);
     }
 }

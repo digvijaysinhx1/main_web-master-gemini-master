@@ -1,64 +1,980 @@
 {
-  "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null",
-
-    "airports": {
-      ".read": true,
-      ".write": true
+  "airports": {
+    "airport1": {
+      "city": "Delhi",
+      "country": "India",
+      "iata": "DEL",
+      "name": "Indira Gandhi International Airport"
     },
-
-    "users": {
-      "$userId": {
-        ".read": "auth != null && auth.uid === $userId",
-        ".write": "auth != null && auth.uid === $userId"
-      }
+    "airport10": {
+      "city": "Pune",
+      "country": "India",
+      "iata": "PNQ",
+      "name": "Pune Airport"
     },
-
-    "bookings": {
-      "$bookingId": {
-        ".read": true,
-        ".write": true
-      }
+    "airport100": {
+      "city": "Virac",
+      "country": "India",
+      "iata": "VRC",
+      "name": "Virac Airport"
     },
-
-    "hotel_bookings": {
-      "$bookingId": {
-        ".read": "auth != null && data.child('userId').val() === auth.uid",
-        ".write": "auth != null && newData.child('userId').val() === auth.uid"
-      }
+    "airport101": {
+      "city": "Rajouri",
+      "country": "India",
+      "iata": "RJI",
+      "name": "Rajouri Airport"
     },
-
-    "flights": {
-      ".read": true,
-      ".write": false
+    "airport102": {
+      "city": "Solapur",
+      "country": "India",
+      "iata": "SSE",
+      "name": "Solapur Airport"
     },
-
-    "seats": {
-      "$flightId": {
-        ".read": true,
-        "$seatNumber": {
-          ".write": "auth != null"
-        }
-      }
+    "airport103": {
+      "city": "Guna",
+      "country": "India",
+      "iata": "GUX",
+      "name": "Guna Airport"
     },
-
-    "itineraries": {
-  		"$userId": {
-    		".read": true,  // Allow authenticated users to read any itinerary
-    		".write": true,  // Only allow users to write their own itineraries
-    	"$itineraryId": {
-      	".read": true,  // Allow public reading of individual itineraries
-      	".write": true // Only owner can modify
-      	}
-    	}
+    "airport104": {
+      "city": "Udaipur",
+      "country": "India",
+      "iata": "UDR",
+      "name": "Maharana Pratap Airport"
     },
-    "reviews": {
-      ".read": true,
-      ".write": "auth != null",
-      "$reviewId": {
-        ".validate": "newData.child('userId').val() === auth.uid"
-      }
+    "airport105": {
+      "city": "Mamburdi",
+      "country": "India",
+      "iata": "MBI",
+      "name": "Mamburdi Airport"
+    },
+    "airport106": {
+      "city": "Farrukhabad",
+      "country": "India",
+      "iata": "FBD",
+      "name": "Farrukhabad Airport"
+    },
+    "airport107": {
+      "city": "Nashik",
+      "country": "India",
+      "iata": "ISK",
+      "name": "Nashik Airport"
+    },
+    "airport108": {
+      "city": "Leh",
+      "country": "India",
+      "iata": "IXL",
+      "name": "Kushok Bakula Rimpochee Airport"
+    },
+    "airport109": {
+      "city": "Nagpur",
+      "country": "India",
+      "iata": "NAG",
+      "name": "Dr. Babasaheb Ambedkar International Airport"
+    },
+    "airport11": {
+      "city": "Chandigarh",
+      "country": "India",
+      "iata": "IXC",
+      "name": "Chandigarh Airport"
+    },
+    "airport110": {
+      "city": "Bijapur",
+      "country": "India",
+      "iata": "BJU",
+      "name": "Bijapur Airport"
+    },
+    "airport111": {
+      "city": "Porbandar",
+      "country": "India",
+      "iata": "PBD",
+      "name": "Porbandar Airport"
+    },
+    "airport112": {
+      "city": "Pavur",
+      "country": "India",
+      "iata": "PAV",
+      "name": "Pavur Airport"
+    },
+    "airport113": {
+      "city": "Raipur",
+      "country": "India",
+      "iata": "RPR",
+      "name": "Swami Vivekananda Airport"
+    },
+    "airport114": {
+      "city": "Ranchi",
+      "country": "India",
+      "iata": "IXR",
+      "name": "Birsa Munda Airport"
+    },
+    "airport115": {
+      "city": "Dimapur",
+      "country": "India",
+      "iata": "DMU",
+      "name": "Dimapur Airport"
+    },
+    "airport116": {
+      "city": "Port Blair",
+      "country": "India",
+      "iata": "IXZ",
+      "name": "Veer Savarkar International Airport"
+    },
+    "airport117": {
+      "city": "Tuticorin",
+      "country": "India",
+      "iata": "TCR",
+      "name": "Tuticorin Airport"
+    },
+    "airport118": {
+      "city": "Virac",
+      "country": "India",
+      "iata": "VRC",
+      "name": "Virac Airport"
+    },
+    "airport119": {
+      "city": "Silchar",
+      "country": "India",
+      "iata": "IXS",
+      "name": "Silchar Airport"
+    },
+    "airport12": {
+      "city": "Lucknow",
+      "country": "India",
+      "iata": "LKO",
+      "name": "Chaudhary Charan Singh International Airport"
+    },
+    "airport120": {
+      "city": "Tezu",
+      "country": "India",
+      "iata": "TEI",
+      "name": "Tezu Airport"
+    },
+    "airport121": {
+      "city": "Balurghat",
+      "country": "India",
+      "iata": "BZL",
+      "name": "Balurghat Airport"
+    },
+    "airport122": {
+      "city": "Darbhanga",
+      "country": "India",
+      "iata": "DBR",
+      "name": "Darbhanga Airport"
+    },
+    "airport123": {
+      "city": "Guwahati",
+      "country": "India",
+      "iata": "GAU",
+      "name": "Lokpriya Gopinath Bordoloi International Airport"
+    },
+    "airport124": {
+      "city": "Bagdogra",
+      "country": "India",
+      "iata": "IXB",
+      "name": "Bagdogra International Airport"
+    },
+    "airport125": {
+      "city": "Lilabari",
+      "country": "India",
+      "iata": "IXI",
+      "name": "Lilabari Airport"
+    },
+    "airport126": {
+      "city": "Khowai",
+      "country": "India",
+      "iata": "IXN",
+      "name": "Khowai Airport"
+    },
+    "airport127": {
+      "city": "Pasighat",
+      "country": "India",
+      "iata": "IXT",
+      "name": "Pasighat Airport"
+    },
+    "airport128": {
+      "city": "Malda",
+      "country": "India",
+      "iata": "LDA",
+      "name": "Malda Airport"
+    },
+    "airport129": {
+      "city": "Muzaffarpur",
+      "country": "India",
+      "iata": "MZU",
+      "name": "Muzaffarpur Airport"
+    },
+    "airport13": {
+      "city": "Varanasi",
+      "country": "India",
+      "iata": "VNS",
+      "name": "Lal Bahadur Shastri Airport"
+    },
+    "airport130": {
+      "city": "Patna",
+      "country": "India",
+      "iata": "PAT",
+      "name": "Jay Prakash Narayan International Airport"
+    },
+    "airport131": {
+      "city": "Jeypore",
+      "country": "India",
+      "iata": "PYB",
+      "name": "Jeypore Airport"
+    },
+    "airport132": {
+      "city": "Balurghat",
+      "country": "India",
+      "iata": "RGH",
+      "name": "Balurghat Airport"
+    },
+    "airport133": {
+      "city": "Tezpur",
+      "country": "India",
+      "iata": "TEZ",
+      "name": "Tezpur Airport"
+    },
+    "airport134": {
+      "city": "Rourkela",
+      "country": "India",
+      "iata": "VEP",
+      "name": "Rourkela Airport"
+    },
+    "airport135": {
+      "city": "Ziro",
+      "country": "India",
+      "iata": "ZER",
+      "name": "Ziro Airport"
+    },
+    "airport136": {
+      "city": "Aizawl",
+      "country": "India",
+      "iata": "AJL",
+      "name": "Lengpui Airport"
+    },
+    "airport137": {
+      "city": "Along",
+      "country": "India",
+      "iata": "IXV",
+      "name": "Along Airport"
+    },
+    "airport14": {
+      "city": "Jaipur",
+      "country": "India",
+      "iata": "JAI",
+      "name": "Jaipur International Airport"
+    },
+    "airport15": {
+      "city": "Bagdogra",
+      "country": "India",
+      "iata": "IXB",
+      "name": "Bagdogra Airport"
+    },
+    "airport16": {
+      "city": "Bhubaneswar",
+      "country": "India",
+      "iata": "BBI",
+      "name": "Biju Patnaik International Airport"
+    },
+    "airport17": {
+      "city": "Amritsar",
+      "country": "India",
+      "iata": "ATQ",
+      "name": "Sri Guru Ram Dass Jee International Airport"
+    },
+    "airport18": {
+      "city": "Jammu",
+      "country": "India",
+      "iata": "IXJ",
+      "name": "Jammu Airport"
+    },
+    "airport19": {
+      "city": "Srinagar",
+      "country": "India",
+      "iata": "SXR",
+      "name": "Sheikh ul-Alam International Airport"
+    },
+    "airport2": {
+      "city": "Mumbai",
+      "country": "India",
+      "iata": "BOM",
+      "name": "Chhatrapati Shivaji International Airport"
+    },
+    "airport20": {
+      "city": "Madurai",
+      "country": "India",
+      "iata": "IXM",
+      "name": "Madurai Airport"
+    },
+    "airport21": {
+      "city": "Tiruchirappalli",
+      "country": "India",
+      "iata": "TRZ",
+      "name": "Tiruchirappalli International Airport"
+    },
+    "airport22": {
+      "city": "Imphal",
+      "country": "India",
+      "iata": "IMF",
+      "name": "Imphal International Airport"
+    },
+    "airport23": {
+      "city": "Port Blair",
+      "country": "India",
+      "iata": "IXZ",
+      "name": "Veer Savarkar International Airport"
+    },
+    "airport24": {
+      "city": "Guwahati",
+      "country": "India",
+      "iata": "GAU",
+      "name": "Lokpriya Gopinath Bordoloi International Airport"
+    },
+    "airport25": {
+      "city": "Ranchi",
+      "country": "India",
+      "iata": "IXR",
+      "name": "Birsa Munda Airport"
+    },
+    "airport26": {
+      "city": "Aurangabad",
+      "country": "India",
+      "iata": "IXU",
+      "name": "Aurangabad Airport"
+    },
+    "airport27": {
+      "city": "Dibrugarh",
+      "country": "India",
+      "iata": "DIB",
+      "name": "Dibrugarh Airport"
+    },
+    "airport28": {
+      "city": "Bhopal",
+      "country": "India",
+      "iata": "BHO",
+      "name": "Raja Bhoj International Airport"
+    },
+    "airport29": {
+      "city": "Allahabad",
+      "country": "India",
+      "iata": "IXD",
+      "name": "Allahabad Airport"
+    },
+    "airport3": {
+      "city": "Bangalore",
+      "country": "India",
+      "iata": "BLR",
+      "name": "Kempegowda International Airport"
+    },
+    "airport30": {
+      "city": "Surat",
+      "country": "India",
+      "iata": "STV",
+      "name": "Surat Airport"
+    },
+    "airport31": {
+      "city": "Visakhapatnam",
+      "country": "India",
+      "iata": "VTZ",
+      "name": "Visakhapatnam International Airport"
+    },
+    "airport32": {
+      "city": "Mangalore",
+      "country": "India",
+      "iata": "IXE",
+      "name": "Mangalore International Airport"
+    },
+    "airport33": {
+      "city": "Leh",
+      "country": "India",
+      "iata": "IXL",
+      "name": "Kushok Bakula Rimpochee Airport"
+    },
+    "airport34": {
+      "city": "Hubli",
+      "country": "India",
+      "iata": "HBX",
+      "name": "Hubli Airport"
+    },
+    "airport35": {
+      "city": "Lilabari",
+      "country": "India",
+      "iata": "IXI",
+      "name": "Lilabari Airport"
+    },
+    "airport36": {
+      "city": "Tuticorin",
+      "country": "India",
+      "iata": "TCR",
+      "name": "Tuticorin Airport"
+    },
+    "airport37": {
+      "city": "Belgaum",
+      "country": "India",
+      "iata": "IXG",
+      "name": "Belgaum Airport"
+    },
+    "airport38": {
+      "city": "Jorhat",
+      "country": "India",
+      "iata": "JRH",
+      "name": "Jorhat Airport"
+    },
+    "airport39": {
+      "city": "Dimapur",
+      "country": "India",
+      "iata": "DMU",
+      "name": "Dimapur Airport"
+    },
+    "airport4": {
+      "city": "Chennai",
+      "country": "India",
+      "iata": "MAA",
+      "name": "Chennai International Airport"
+    },
+    "airport40": {
+      "city": "Silchar",
+      "country": "India",
+      "iata": "IXS",
+      "name": "Silchar Airport"
+    },
+    "airport41": {
+      "city": "Aizawl",
+      "country": "India",
+      "iata": "AJL",
+      "name": "Lengpui Airport"
+    },
+    "airport42": {
+      "city": "Pasighat",
+      "country": "India",
+      "iata": "IXT",
+      "name": "Pasighat Airport"
+    },
+    "airport43": {
+      "city": "Shillong",
+      "country": "India",
+      "iata": "SHL",
+      "name": "Shillong Airport"
+    },
+    "airport44": {
+      "city": "Zero",
+      "country": "India",
+      "iata": "ZER",
+      "name": "Zero Airport"
+    },
+    "airport45": {
+      "city": "Tezpur",
+      "country": "India",
+      "iata": "TEZ",
+      "name": "Tezpur Airport"
+    },
+    "airport46": {
+      "city": "Along",
+      "country": "India",
+      "iata": "IXV",
+      "name": "Along Airport"
+    },
+    "airport47": {
+      "city": "Khajuraho",
+      "country": "India",
+      "iata": "HJR",
+      "name": "Khajuraho Airport"
+    },
+    "airport48": {
+      "city": "Porbandar",
+      "country": "India",
+      "iata": "PBD",
+      "name": "Porbandar Airport"
+    },
+    "airport49": {
+      "city": "Kandla",
+      "country": "India",
+      "iata": "IXY",
+      "name": "Kandla Airport"
+    },
+    "airport5": {
+      "city": "Ahmedabad",
+      "country": "India",
+      "iata": "AMD",
+      "name": "Sardar Vallabhbhai Patel International Airport"
+    },
+    "airport50": {
+      "city": "Jamnagar",
+      "country": "India",
+      "iata": "JGA",
+      "name": "Jamnagar Airport"
+    },
+    "airport51": {
+      "city": "Bhuj",
+      "country": "India",
+      "iata": "BHJ",
+      "name": "Bhuj Airport"
+    },
+    "airport52": {
+      "city": "Jabalpur",
+      "country": "India",
+      "iata": "JLR",
+      "name": "Jabalpur Airport"
+    },
+    "airport53": {
+      "city": "Mysore",
+      "country": "India",
+      "iata": "MYQ",
+      "name": "Mysore Airport"
+    },
+    "airport54": {
+      "city": "Bathinda",
+      "country": "India",
+      "iata": "BUP",
+      "name": "Bathinda Airport"
+    },
+    "airport55": {
+      "city": "Udaipur",
+      "country": "India",
+      "iata": "UDR",
+      "name": "Maharana Pratap Airport"
+    },
+    "airport56": {
+      "city": "Kailashahar",
+      "country": "India",
+      "iata": "IXH",
+      "name": "Kailashahar Airport"
+    },
+    "airport57": {
+      "city": "Kamalpur",
+      "country": "India",
+      "iata": "IXQ",
+      "name": "Kamalpur Airport"
+    },
+    "airport58": {
+      "city": "Bikaner",
+      "country": "India",
+      "iata": "BKB",
+      "name": "Nal Airport"
+    },
+    "airport59": {
+      "city": "Gaya",
+      "country": "India",
+      "iata": "GAJ",
+      "name": "Gaya Airport"
+    },
+    "airport6": {
+      "city": "Kolkata",
+      "country": "India",
+      "iata": "CCU",
+      "name": "Netaji Subhas Chandra Bose International Airport"
+    },
+    "airport60": {
+      "city": "Keshod",
+      "country": "India",
+      "iata": "IXK",
+      "name": "Keshod Airport"
+    },
+    "airport61": {
+      "city": "Pathankot",
+      "country": "India",
+      "iata": "IXP",
+      "name": "Pathankot Airport"
+    },
+    "airport62": {
+      "city": "Khowai",
+      "country": "India",
+      "iata": "IXN",
+      "name": "Khowai Airport"
+    },
+    "airport63": {
+      "city": "Ludhiana",
+      "country": "India",
+      "iata": "LUH",
+      "name": "Ludhiana Airport"
+    },
+    "airport64": {
+      "city": "Dharamsala",
+      "country": "India",
+      "iata": "DHM",
+      "name": "Kangra Airport"
+    },
+    "airport65": {
+      "city": "Shimla",
+      "country": "India",
+      "iata": "SLV",
+      "name": "Shimla Airport"
+    },
+    "airport66": {
+      "city": "Kullu",
+      "country": "India",
+      "iata": "KUU",
+      "name": "Bhuntar Airport"
+    },
+    "airport67": {
+      "city": "Rajahmundry",
+      "country": "India",
+      "iata": "RJA",
+      "name": "Rajahmundry Airport"
+    },
+    "airport68": {
+      "city": "Tirupati",
+      "country": "India",
+      "iata": "TIR",
+      "name": "Tirupati Airport"
+    },
+    "airport69": {
+      "city": "Vijayawada",
+      "country": "India",
+      "iata": "VGA",
+      "name": "Vijayawada Airport"
+    },
+    "airport7": {
+      "city": "Hyderabad",
+      "country": "India",
+      "iata": "HYD",
+      "name": "Rajiv Gandhi International Airport"
+    },
+    "airport70": {
+      "city": "Warangal",
+      "country": "India",
+      "iata": "WGC",
+      "name": "Warangal Airport"
+    },
+    "airport71": {
+      "city": "Jeypore",
+      "country": "India",
+      "iata": "PYB",
+      "name": "Jeypore Airport"
+    },
+    "airport72": {
+      "city": "Hyderabad",
+      "country": "India",
+      "iata": "BPM",
+      "name": "Begumpet Airport"
+    },
+    "airport73": {
+      "city": "Ballari",
+      "country": "India",
+      "iata": "VDY",
+      "name": "Jindal Vijaynagar Airport"
+    },
+    "airport74": {
+      "city": "Rupsi",
+      "country": "India",
+      "iata": "RUP",
+      "name": "Rupsi Airport"
+    },
+    "airport75": {
+      "city": "Agatti Island",
+      "country": "India",
+      "iata": "AGX",
+      "name": "Agatti Airport"
+    },
+    "airport76": {
+      "city": "Bareilly",
+      "country": "India",
+      "iata": "BEK",
+      "name": "Bareilly Airport"
+    },
+    "airport77": {
+      "city": "Jamshedpur",
+      "country": "India",
+      "iata": "IXW",
+      "name": "Sonari Airport"
+    },
+    "airport78": {
+      "city": "Pasighat",
+      "country": "India",
+      "iata": "IXT",
+      "name": "Pasighat Airport"
+    },
+    "airport79": {
+      "city": "Kannur",
+      "country": "India",
+      "iata": "CNN",
+      "name": "Kannur International Airport"
+    },
+    "airport8": {
+      "city": "Goa",
+      "country": "India",
+      "iata": "GOI",
+      "name": "Dabolim Airport"
+    },
+    "airport80": {
+      "city": "Pakur",
+      "country": "India",
+      "iata": "PKU",
+      "name": "Pakur Airport"
+    },
+    "airport81": {
+      "city": "Dharwad",
+      "country": "India",
+      "iata": "DWR",
+      "name": "Dharwad Airport"
+    },
+    "airport82": {
+      "city": "Jagdalpur",
+      "country": "India",
+      "iata": "JGB",
+      "name": "Jagdalpur Airport"
+    },
+    "airport83": {
+      "city": "Bilaspur",
+      "country": "India",
+      "iata": "PAB",
+      "name": "Bilaspur Airport"
+    },
+    "airport84": {
+      "city": "Varanasi",
+      "country": "India",
+      "iata": "VNS",
+      "name": "Lal Bahadur Shastri International Airport"
+    },
+    "airport85": {
+      "city": "Pasighat",
+      "country": "India",
+      "iata": "IXT",
+      "name": "Pasighat Airport"
+    },
+    "airport86": {
+      "city": "Jaisalmer",
+      "country": "India",
+      "iata": "JSA",
+      "name": "Jaisalmer Airport"
+    },
+    "airport87": {
+      "city": "Hisar",
+      "country": "India",
+      "iata": "HSS",
+      "name": "Hisar Airport"
+    },
+    "airport88": {
+      "city": "Satna",
+      "country": "India",
+      "iata": "TNI",
+      "name": "Satna Airport"
+    },
+    "airport89": {
+      "city": "Muzaffarpur",
+      "country": "India",
+      "iata": "MZU",
+      "name": "Muzaffarpur Airport"
+    },
+    "airport9": {
+      "city": "Kochi",
+      "country": "India",
+      "iata": "COK",
+      "name": "Cochin International Airport"
+    },
+    "airport90": {
+      "city": "Rewa",
+      "country": "India",
+      "iata": "REW",
+      "name": "Rewa Airport"
+    },
+    "airport91": {
+      "city": "Jharsuguda",
+      "country": "India",
+      "iata": "JRG",
+      "name": "Jharsuguda Airport"
+    },
+    "airport92": {
+      "city": "Ajmer",
+      "country": "India",
+      "iata": "KQH",
+      "name": "Kishangarh Airport"
+    },
+    "airport93": {
+      "city": "Bathinda",
+      "country": "India",
+      "iata": "BUP",
+      "name": "Bathinda Airport"
+    },
+    "airport94": {
+      "city": "Along",
+      "country": "India",
+      "iata": "IXV",
+      "name": "Along Airport"
+    },
+    "airport95": {
+      "city": "Dhanbad",
+      "country": "India",
+      "iata": "DBD",
+      "name": "Dhanbad Airport"
+    },
+    "airport96": {
+      "city": "Srinagar",
+      "country": "India",
+      "iata": "SXR",
+      "name": "Sheikh ul-Alam International Airport"
+    },
+    "airport97": {
+      "city": "Pantnagar",
+      "country": "India",
+      "iata": "PGH",
+      "name": "Pantnagar Airport"
+    },
+    "airport98": {
+      "city": "Thanjavur",
+      "country": "India",
+      "iata": "TJV",
+      "name": "Thanjavur Air Force Station"
+    },
+    "airport99": {
+      "city": "Daman",
+      "country": "India",
+      "iata": "NMB",
+      "name": "Daman Airport"
     }
+  },
+  "flight_bookings": {
+    "booking1": {
+      "flightDetails": {
+        "airline": "...",
+        "departure": "...",
+        "flightNumber": "...",
+        "from": "...",
+        "isReturn": "...",
+        "to": "..."
+      },
+      "passengerDetails": {
+        "email": "...",
+        "firstName": "...",
+        "lastName": "...",
+        "phone": "..."
+      },
+      "paymentDetails": {
+        "amount": "number",
+        "bookingStatus": "confirmed",
+        "cardLastFour": "1234",
+        "createdAt": "2025-04-07T14:45:24+05:30",
+        "currency": "INR",
+        "paymentMethod": "creditCard",
+        "paymentStatus": "completed",
+        "userId": "user123"
+      },
+      "reference": "BK[timestamp]",
+      "seatDetails": {
+        "class": "economy/business",
+        "seatNumber": "..."
+      },
+      "timestamp": "ISO date"
+    }
+  },
+  "hotel_bookings": {
+    "booking1": {
+      "adults": 2,
+      "bookingId": "HB202504071001ABCD",
+      "bookingStatus": "confirmed",
+      "checkIn": "2025-04-10T00:00:00Z",
+      "checkOut": "2025-04-12T00:00:00Z",
+      "children": 1,
+      "createdAt": "2025-04-07T14:45:24+05:30",
+      "guest": {
+        "email": "john@example.com",
+        "name": "John Doe",
+        "phone": "+91-9876543210"
+      },
+      "hotelId": "hotel123",
+      "hotelName": "Sample Hotel",
+      "nights": 2,
+      "paymentMethod": "creditCard",
+      "paymentStatus": "completed",
+      "pricePerNight": 5000,
+      "roomType": "Deluxe Room",
+      "rooms": 1,
+      "specialRequests": "Early check-in requested",
+      "totalPrice": 10000,
+      "userId": "user123"
+    }
+  },
+  "itineraries": {
+    "{itineraryId}": {
+      "user" : "string",
+      "budget": "Moderate",
+      "createdAt": "2025-04-21T10:30:00+05:30",
+      "destination": "Kedarnath, Uttarakhand",
+      "endDate": "2025-04-23",
+      "places": {
+        "place1": {
+          "day": "Day 1",
+          "description": "A sacred Hindu temple dedicated to Lord Shiva, nestled in the Garhwal Himalayas near the Mandakini River.",
+          "entryFee": 0,
+          "facts": "Believed to have been built by the Pandavas, it's one of the twelve Jyotirlingas.",
+          "imageUrl": "https://example.com/kedarnath-temple.jpg",
+          "name": "Kedarnath Temple",
+          "visitOrder": 1,
+          "visitTime": "6:00 AM - 7:00 PM"
+        },
+        "place2": {
+          "day": "Day 1",
+          "description": "A temple honoring Bhairav, a fierce form of Lord Shiva who is the protector of Kedarnath.",
+          "entryFee": 0,
+          "facts": "Pilgrims traditionally visit Bhairav Temple after Kedarnath to complete their journey.",
+          "imageUrl": "https://example.com/bhairav-temple.jpg",
+          "name": "Bhairav Temple",
+          "visitOrder": 2,
+          "visitTime": "7:00 AM - 6:00 PM"
+        },
+        "place3": {
+          "day": "Day 1",
+          "description": "Memorial site of Adi Shankaracharya who attained Samadhi here at the age of 32.",
+          "entryFee": 0,
+          "facts": "He is credited with reviving the Kedarnath temple in the 8th century.",
+          "imageUrl": "https://example.com/shankaracharya-samadhi.jpg",
+          "name": "Shankaracharya Samadhi",
+          "visitOrder": 3,
+          "visitTime": "6:00 AM - 6:00 PM"
+        },
+        "place4": {
+          "day": "Day 2",
+          "description": "A sacred Hindu temple dedicated to Lord Shiva, nestled in the Garhwal Himalayas near the Mandakini River.",
+          "entryFee": 0,
+          "facts": "Believed to have been built by the Pandavas, it's one of the twelve Jyotirlingas.",
+          "imageUrl": "https://example.com/kedarnath-temple.jpg",
+          "name": "Kedarnath Temple",
+          "visitOrder": 1,
+          "visitTime": "6:00 AM - 7:00 PM"
+        },
+        "place5": {
+          "day": "Day 2",
+          "description": "A temple honoring Bhairav, a fierce form of Lord Shiva who is the protector of Kedarnath.",
+          "entryFee": 0,
+          "facts": "Pilgrims traditionally visit Bhairav Temple after Kedarnath to complete their journey.",
+          "imageUrl": "https://example.com/bhairav-temple.jpg",
+          "name": "Bhairav Temple",
+          "visitOrder": 2,
+          "visitTime": "7:00 AM - 6:00 PM"
+        },
+        "place6": {
+          "day": "Day 2",
+          "description": "Memorial site of Adi Shankaracharya who attained Samadhi here at the age of 32.",
+          "entryFee": 0,
+          "facts": "He is credited with reviving the Kedarnath temple in the 8th century.",
+          "imageUrl": "https://example.com/shankaracharya-samadhi.jpg",
+          "name": "Shankaracharya Samadhi",
+          "visitOrder": 3,
+          "visitTime": "6:00 AM - 6:00 PM"
+        }
+      },
+      "startDate": "2025-04-21",
+      "status": "active",
+      "travelers": "Solo Traveler",
+      "userId": "user123"
+    }
+  },
+  "reviews": {
+    "review1": {
+      "message": "Absolutely loved the trip planner! Super easy to use.",
+      "name": "Alice",
+      "timestamp": "4/14/2025, 3:45 PM",
+      "userId": "user123"
+    }
+  },
+  "users": {
+    "{userId}": {
+      "email": "user@example.com",
+      "name": "John Doe",
+      "phone": "+911234567890",
+      "country": "India",
+      "state": "Delhi"
+    }
+
   }
 }

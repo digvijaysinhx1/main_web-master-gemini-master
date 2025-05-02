@@ -27,7 +27,7 @@
                 <p class="dropdown-toggle">Trips</p>
                 <div class="dropdown-menu">
                     <a href="/create-itinerary">Start a new trip</a>
-                    <a href="/saved-itinerary">Saved Trips</a>
+                    <a href="/app/saved-itinerary/saved-itinerary.html">Saved Trips</a>
                 </div>
             </div>
             <div class="right-links">
@@ -35,10 +35,6 @@
                 <a href="/hotel">Hotels</a>
                 <a href="/review">Review</a>
             </div>
-
-            <button id="toggleDarkMode" class="theme-toggle">
-                <i class="fas fa-moon"></i>
-            </button>
             <div class="profile-section">
                 <button id="profileBtn" class="profile-button">
                     <img id="userProfilePic" class="profile-pic"
@@ -46,11 +42,13 @@
                         alt="Profile">
                     <span id="userEmail" class="user-email"></span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown hidden">
-                    <a href="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
-                    <button id="logoutBtn" class="dropdown-item logout"><i class="fas fa-sign-out-alt"></i>
-                        Logout</button>
-                </div>
+                    <div id="profileDropdown" class="profile-dropdown hidden">
+                        <a href="/users-bookings" class="dropdown-item"><i class="fas fa-book"></i>Bookings</a>
+                        <a href="/acc-info" class="dropdown-item"><i class="fas fa-user-cog"></i> Account Info</a>
+                        <button id="logoutBtn" class="dropdown-item logout"><i class="fas fa-sign-out-alt"></i>
+                            Logout</button>
+                    </div>
+                </div>  
             </div>
         </div>
     </nav>
@@ -155,7 +153,7 @@
                 <h3>Quick Links</h3>
                 <a href="/create-itinerary">Create Itinerary</a>
                 <a href="/flight">Search Flights</a>
-                <a href="/hotels">Find Hotels</a>
+                <a href="/hotel">Find Hotels</a>
             </div>
             <div class="footer-section">
                 <h3>Contact</h3>
@@ -177,10 +175,6 @@
     </footer>
 
     <script>
-        // Dark Mode Toggle
-        document.getElementById('toggleDarkMode').addEventListener('click', function () {
-            document.body.classList.toggle('dark');
-        });
 
         // Profile Dropdown
         document.getElementById('profileBtn').addEventListener('click', function () {

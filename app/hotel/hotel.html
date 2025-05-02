@@ -167,6 +167,10 @@
                             <input type="tel" id="guestPhone" required>
                         </div>
                         <div class="form-group">
+                            <label for="guestRooms">Number of Rooms</label>
+                            <input type="number" id="guestRooms" min="1" value="1" required>
+                        </div>
+                        <div class="form-group">
                             <label for="specialRequests">Special Requests</label>
                             <textarea id="specialRequests"></textarea>
                         </div>
@@ -181,24 +185,16 @@
                     <div class="booking-summary" id="bookingSummary"></div>
                     <form id="paymentForm">
                         <div class="payment-methods">
-                            <label>
-                                <input type="radio" name="paymentMethod" value="card" checked>
-                                Credit/Debit Card
-                            </label>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="upi">
-                                UPI
-                            </label>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="netbanking">
-                                Net Banking
-                            </label>
+                            <div class="payment-method-option">
+                                <input type="radio" id="card" name="paymentMethod" value="card" checked required>
+                                <label for="card">Credit/Debit Card</label>
+                            </div>
                         </div>
 
                         <div id="cardPayment" class="payment-section">
                             <div class="form-group">
                                 <label for="cardNumber">Card Number</label>
-                                <input type="text" id="cardNumber" pattern="[0-9]{16}" placeholder="1234 5678 9012 3456" required>
+                                <input type="text" id="cardNumber"  placeholder="1234 5678 9012 3456" required>
                             </div>
                             <div class="card-details">
                                 <div class="form-group">
@@ -216,25 +212,7 @@
                             </div>
                         </div>
 
-                        <div id="upiPayment" class="payment-section" style="display: none;">
-                            <div class="form-group">
-                                <label for="upiId">UPI ID</label>
-                                <input type="text" id="upiId" placeholder="username@bank">
-                            </div>
-                        </div>
-
-                        <div id="netbankingPayment" class="payment-section" style="display: none;">
-                            <div class="form-group">
-                                <label for="bankSelect">Select Bank</label>
-                                <select id="bankSelect">
-                                    <option value="">Select a bank</option>
-                                    <option value="sbi">State Bank of India</option>
-                                    <option value="hdfc">HDFC Bank</option>
-                                    <option value="icici">ICICI Bank</option>
-                                    <option value="axis">Axis Bank</option>
-                                </select>
-                            </div>
-                        </div>
+                        
 
                         <div class="terms-conditions">
                             <label>
@@ -251,7 +229,14 @@
         </div>
     </div>
 
+    <div id="loadingIndicator" style="display: none; text-align: center; margin-top: 1rem;">
+        <div class="spinner"></div>
+        <p>Searching for hotels...</p>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="hotel.js"></script>
+    
+    <script type="module" src="hotel.js"></script>
 </body>
 </html>

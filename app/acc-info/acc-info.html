@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Info</title>
+  <link rel="stylesheet" href="acc-info.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>My Profile</h2>
+    <form id="profileForm" class="profile-form">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="fullName" />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone"/>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email"/>
+      </div>
+
+      <div class="form-group">
+        <label for="country">Country</label>
+        <input type="text" id="country" name="country"/>
+      </div>
+
+      <div class="form-group">
+        <label for="state">State</label>
+        <input type="text" id="state" name="state"/>
+      </div>
+
+      <!-- <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password"/>
+      </div> -->
+
+      <!-- <p class="forgot-password">
+        <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+      </p> -->
+
+      <!-- Modal -->
+<!-- <div id="forgotPasswordModal" class="modal hidden">
+    <div class="modal-content">
+      <p>If this email is registered, a password reset link will be sent.</p>
+      <button id="closeModalBtn">Close</button>
+    </div>
+  </div> -->
+
+      <button type="button" id="updateBtn" class="update-btn">Update Info</button>
+    </form>
+  </div>
+
+  <script type="module" src="acc-info.js"></script>
+</body>
+</html>

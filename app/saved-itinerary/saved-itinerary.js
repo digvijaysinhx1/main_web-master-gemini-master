@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
         card.innerHTML = `
             <div class="itinerary-title">${destination}</div>
             <div class="itinerary-details">
-                <p><strong>Dates:</strong> ${startDate} - ${endDate}</p>
-                <p><strong>Budget:</strong> $${itinerary.metadata.budget}</p>
+                <p><strong>Start Date:</strong> ${startDate}</p>
+                <p><strong>End Date:</strong> ${endDate}</p>
                 <p><strong>Travelers:</strong> ${itinerary.metadata.travelers}</p>
             </div>
             <div class="itinerary-meta">
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to view itinerary details
     window.viewItinerary = function(itineraryId) {
-        window.location.href = `/itinerary/${itineraryId}`;
+        window.location.href = `/view-trip?id=${itineraryId}&userId=${currentUserId}`;
     };
 
     // Function to delete itinerary
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            const response = await fetch(`/api/itineraries/${itineraryId}`, {
+            const response = await fetch(`/api/itineraries/${currentUserId}/${itineraryId}`, {
                 method: 'DELETE'
             });
             const data = await response.json();

@@ -1,0 +1,118 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    margin: 0;
+    padding: 20px;
+  }
+  
+  .timeline-container {
+    position: relative;
+    padding-left: 40px;
+    border-left: 4px solid #4b4b4b;
+  }
+  
+  .day-label {
+    font-size: 1.2em;
+    margin: 20px 0 10px;
+    font-weight: bold;
+  }
+  
+  .card {
+    position: relative;
+    background: white;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    display: flex;
+    gap: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: -27px;
+    width: 14px;
+    height: 14px;
+    background: #4b4b4b;
+    border-radius: 50%;
+    border: 3px solid white;
+  }
+  
+  .card img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  
+  .card-content {
+    flex: 1;
+  }
+  
+  .card-content h4 {
+    margin: 0;
+  }
+  
+  .price {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-top: 5px;
+  }
+  
+  .timeline-day {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .timeline-day::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #E5E7EB;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -0.375rem;
+    top: 0.5rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: #3B82F6;
+    border-radius: 50%;
+  }
+
+  .activity-card {
+    transition: all 0.3s ease;
+  }
+
+  .activity-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .activity-image {
+    background-size: cover;
+    background-position: center;
+    min-height: 200px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }

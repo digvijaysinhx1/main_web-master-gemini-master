@@ -1,3 +1,8 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+
+
 // Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBm4FwFhQyW17r_8Waa6SjQGJlCm8DG9GU",
@@ -10,13 +15,44 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const reviewsRef = database.ref("reviews");
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const reviewsRef = ref(database, "reviews");
+
+const auth = getAuth(app);
+
+// function submitReview() {
+//   const user = auth.currentUser;
+
+//   if (!user) {
+//     alert("You must be logged in to submit a review.");
+//     return;
+//   }
+
+//   const name = document.getElementById("name").value.trim();
+//   const message = document.getElementById("message").value.trim();
+
+//   if (!name || !message) {
+//     alert("Please fill in both fields.");
+//     return;
+//   }
+
+//   const review = {
+//     name,
+//     message,
+//     timestamp: new Date().toLocaleString(),
+//     userId: user.uid
+//   };
+
+//   push(reviewsRef, review);
+
+//   document.getElementById("name").value = "";
+//   document.getElementById("message").value = "";
+// }
 
 // Submit a new review
 function submitReview() {
-  const user = firebase.auth().currentUser;
+  const user = auth.currentUser;
 
   // Ensure the user is logged in
   if (!user) {
@@ -41,15 +77,14 @@ function submitReview() {
   };
 
   // Save review to Firebase Realtime Database
-  reviewsRef.push(review);
+  push(reviewsRef, review);
 
-  // Clear form inputs
   document.getElementById("name").value = "";
   document.getElementById("message").value = "";
 }
 
 // Show all reviews from Firebase
-reviewsRef.on("value", (snapshot) => {
+onValue(reviewsRef, (snapshot) => {
   const reviewsList = document.getElementById("reviewsList");
   reviewsList.innerHTML = "";  // Clear the reviews list
 

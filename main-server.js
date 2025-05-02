@@ -171,10 +171,10 @@ const monitorSeatAvailability = (flightNumber, callback) => {
 const expressApp = express();
 const port = 4000;
 
-// Enable CORS
+// Enable CORS with proper configuration
 expressApp.use(cors({
-    origin: 'http://localhost:4000',
-    credentials: true
+    origin: true, // Allow any origin
+    credentials: true // Allow credentials
 }));
 
 // Parse JSON bodies
@@ -188,9 +188,11 @@ expressApp.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
     saveUninitialized: true,
-    rolling: true, // Resets the cookie expiration on every response
+    rolling: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Set to true only in production with HTTPS
+        httpOnly: true,
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
@@ -552,8 +554,8 @@ expressApp.post('/api/hotels/booking/create', async (req, res) => {
             hotelId,
             hotelName,
             roomType,
-            checkIn,
-            checkOut,
+            checkInDate,
+            checkOutDate,
             rooms,
             adults,
             children,
@@ -561,11 +563,12 @@ expressApp.post('/api/hotels/booking/create', async (req, res) => {
             paymentMethod,
             guestName,
             guestEmail,
-            guestPhone
+            guestPhone,
+            specialRequests
         } = req.body;
 
         // Validate required fields
-        if (!hotelId || !hotelName || !roomType || !checkIn || !checkOut || !rooms || 
+        if (!hotelId || !hotelName || !roomType || !checkInDate || !checkOutDate || !rooms ||
             !adults || !pricePerNight || !paymentMethod || !guestName || !guestEmail || !guestPhone) {
             return res.status(400).json({
                 success: false,
@@ -573,32 +576,82 @@ expressApp.post('/api/hotels/booking/create', async (req, res) => {
             });
         }
 
-        // Generate a unique booking reference
-        const bookingId = 'BK' + Date.now().toString().slice(-8) + Math.random().toString(36).slice(-4).toUpperCase();
-
         // Calculate total price
-        const checkInDate = new Date(checkIn);
-        const checkOutDate = new Date(checkOut);
-        const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+        const checkIn = new Date(checkInDate);
+        const checkOut = new Date(checkOutDate);
+        const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
         const totalPrice = pricePerNight * nights * rooms;
 
-        // In a real application, you would:
-        // 1. Process payment through a payment gateway
-        // 2. Store booking details in a database
-        // 3. Send confirmation email
-        // 4. Update hotel inventory
+        // Create booking reference
+        const bookingId = `HB${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
-        // For demo purposes, we'll just return success
+        // Format dates in ISO format with timezone
+        const formattedCheckIn = checkIn.toISOString();
+        const formattedCheckOut = checkOut.toISOString();
+        const createdAt = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+
+        const bookingData = {
+            adults: parseInt(adults),
+            bookingId,
+            bookingStatus: "confirmed",
+            checkInDate: formattedCheckIn,
+            checkOutDate: formattedCheckOut,
+            children: children ? parseInt(children) : 0,
+            createdAt,
+            guest: {
+                email: guestEmail,
+                name: guestName,
+                phone: guestPhone
+            },
+            hotelId,
+            hotelName,
+            nights,
+            paymentMethod,
+            paymentStatus: "pending",
+            pricePerNight: parseInt(pricePerNight),
+            roomType,
+            rooms: parseInt(rooms),
+            specialRequests: specialRequests || "",
+            totalPrice,
+            userId: req.session?.userId || 'guest'
+        };
+
+        // Firebase save to "hotel_bookings"
+        const hotelBookingsRef = ref(db, 'hotel_bookings');
+        const newHotelBookingRef = push(hotelBookingsRef);
+
+        await set(newHotelBookingRef, {
+            bookingId,
+            hotelId,
+            hotelName,
+            roomType,
+            checkInDate,
+            checkOutDate,
+            nights,
+            rooms,
+            adults,
+            children,
+            totalPrice,
+            pricePerNight,
+            paymentMethod,
+            guestName,
+            guestEmail,
+            guestPhone,
+            specialRequests,
+            createdAt: serverTimestamp(),
+            bookingStatus: 'confirmed'
+        });
+
         res.json({
             success: true,
             bookingId,
-            message: 'Booking confirmed successfully',
+            message: 'Booking confirmed and saved successfully',
             details: {
                 bookingId,
                 hotelName,
                 roomType,
-                checkIn,
-                checkOut,
+                checkInDate,
+                checkOutDate,
                 nights,
                 rooms,
                 adults,
@@ -609,11 +662,13 @@ expressApp.post('/api/hotels/booking/create', async (req, res) => {
             }
         });
 
+
     } catch (error) {
-        console.error('Error creating booking:', error);
+        console.error('Error creating hotel booking:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to create booking'
+            error: 'Failed to create booking',
+            details: error.message
         });
     }
 });
@@ -739,9 +794,8 @@ expressApp.get('/api/config/firebase', (req, res) => {
 });
 
 // Configure static file serving with correct MIME types
-expressApp.use('/app', express.static(path.join(__dirname, 'app'), {
-    setHeaders: setMimeTypes
-}));
+expressApp.use('/static', express.static(path.join(__dirname, 'static')));
+expressApp.use('/app', express.static(path.join(__dirname, 'app')));
 
 expressApp.use('/auth', express.static(path.join(__dirname, 'auth'), {
     setHeaders: setMimeTypes
@@ -771,6 +825,31 @@ expressApp.use('/review', express.static(path.join(__dirname, 'app/review'), {
     setHeaders: setMimeTypes
 }));
 
+expressApp.use('/view-trip', express.static(path.join(__dirname, 'app/view-trip'), {
+    setHeaders: setMimeTypes
+}));
+
+expressApp.use('/acc-info', express.static(path.join(__dirname, 'app/acc-info'), {
+    setHeaders: setMimeTypes
+}));
+
+// Serve static files from the app directory
+expressApp.use(express.static(path.join(__dirname, 'app')));
+
+// Handle frontend page routes
+expressApp.get('/flight', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'flight', 'flight.html'));
+});
+
+expressApp.get('/hotel', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'hotel', 'hotel.html'));
+});
+
+expressApp.get('/review', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'review', 'review.html'));
+});
+
+
 // Authentication middleware
 const requireAuth = (req, res, next) => {
     if (!req.session || !req.session.userId) {
@@ -789,7 +868,7 @@ expressApp.get('/api/check-session', (req, res) => {
             authenticated: true
         });
     } else {
-        res.json({ 
+        res.json({
             authenticated: false,
             userId: null,
             name: null,
@@ -872,24 +951,82 @@ expressApp.get('/create-itinerary', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'create-itinerary', 'create-itinerary.html'));
 });
 
-expressApp.get('/app/create-itinerary/create-itinerary.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'create-itinerary', 'create-itinerary.html'));
+expressApp.get('/view-trip', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'view-trip', 'view-trip.html'));
+});
+expressApp.get('/acc-info', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'acc-info', 'acc-info.html'));
 });
 
-expressApp.get('/flight', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'flight', 'flight.html'));
-});
 
-expressApp.get('/hotel', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'hotel', 'hotel.html'));
-});
+// Get itinerary data endpoint
+expressApp.get('/api/get-itinerary/:userId/:itineraryId', requireAuth, async (req, res) => {
+    try {
+        const itineraryId = req.params.itineraryId;
+        const userId = req.params.userId;
 
-expressApp.get('/saved-itinerary', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'saved-itinerary', 'saved-itinerary.html'));
-});
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                error: 'User not authenticated'
+            });
+        }
 
-expressApp.get('/review', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'review', 'review.html'));
+        console.log('Fetching itinerary:', itineraryId, 'for user:', userId);
+
+        // First try to find the itinerary in the user's path
+        const userItineraryRef = ref(db, `itineraries/${userId}/${itineraryId}`);
+        let snapshot = await get(userItineraryRef);
+
+        if (!snapshot.exists()) {
+            // If not found in user's path, search in all users' itineraries
+            const allUsersRef = ref(db, 'itineraries');
+            const allUsersSnapshot = await get(allUsersRef);
+
+            if (allUsersSnapshot.exists()) {
+                let found = false;
+                allUsersSnapshot.forEach((userSnapshot) => {
+                    const userItineraries = userSnapshot.val();
+                    if (userItineraries[itineraryId]) {
+                        snapshot = {
+                            val: () => userItineraries[itineraryId],
+                            exists: () => true
+                        };
+                        found = true;
+                        return true;
+                    }
+                });
+
+                if (!found) {
+                    return res.status(404).json({
+                        success: false,
+                        error: 'Itinerary not found'
+                    });
+                }
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Itinerary not found'
+                });
+            }
+        }
+
+        const itineraryData = snapshot.val();
+        console.log('Found itinerary:', itineraryData);
+
+        res.json({
+            success: true,
+            itinerary: itineraryData.itineraryData,
+            metadata: itineraryData.metadata
+        });
+    } catch (error) {
+        console.error('Error fetching itinerary:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch itinerary',
+            details: error.message
+        });
+    }
 });
 
 // Hotel search endpoint
@@ -968,8 +1105,8 @@ expressApp.post('/api/hotels/search', requireAuth, async (req, res) => {
                     phone: details.formatted_phone_number,
                     website: details.website,
                     price: basePrice * priceMultiplier,
-                    image: details.photos && details.photos[0] ? 
-                        `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${details.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}` 
+                    image: details.photos && details.photos[0] ?
+                        `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${details.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}`
                         : null
                 };
             } catch (detailError) {
@@ -1035,17 +1172,60 @@ expressApp.post('/api/generate-itinerary', async (req, res) => {
         const end = new Date(endDate);
         const numberOfDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
-        // Create Gemini API prompt
-        const prompt = `Generate a travel planner for ${destination}, for ${numberOfDays} days, with a budget range of ${budget} and ${travelers} travelers. 
-                        Give me a hotel list with name, address, price, image URL, geo-coordinates, rating, and descriptions. 
-                        Provide an itinerary with places, details, image URLs, coordinates, ticket prices, travel times, and best visit times in JSON format.`;
+        // Create Gemini API prompt with strict JSON structure
+        const prompt = `You are a JSON generator for travel itineraries. Generate a travel itinerary for ${destination} with these requirements:
+1. Respond ONLY with valid JSON
+2. Do not include any explanatory text
+3. Follow this exact structure:
+{
+  "itinerarySummary": {
+    "destination": "${destination}",
+    "travelDates": {
+      "start": "${startDate}",
+      "end": "${endDate}"
+    },
+    "travelers": "${travelers}",
+    "budget": "${budget}",
+    "days": "day1",
+    "placesToVisit": [
+      {
+        "day": "Day 1",
+        "name": "string",
+        "imageUrl": "string",
+        "visitTime": "string",
+        "entryFee": "string",
+        "description": "string",
+        "interestingFact": "string",
+        "order": 1
+      }
+    ]
+  }
+}
+
+Requirements:
+- Group places by days (Day 1, Day 2, etc.)
+- Include at least 2-3 places for each day
+- Number of days should match the travel dates
+- Each place must have the day field (e.g., "Day 1", "Day 2")
+- Places should be in chronological order within each day
+- Provide real place names and descriptions
+- Use realistic timings and entry fees
+- Each place must have a unique order number within its day
+- Keep descriptions concise but informative
+- Entry fee should be "Free" or include amount
+- Image URLs should be placeholder URLs like "https://example.com/image-name.jpg"`;
 
         console.log('Sending prompt to Gemini:', prompt);
 
-        // Call Gemini API
+        // Call Gemini API with stricter parameters
         const result = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig,
+            generationConfig: {
+                temperature: 0.3, // Lower temperature for more consistent output
+                topK: 1,
+                topP: 0.8,
+                maxOutputTokens: 2048,
+            },
         });
 
         if (!result || !result.response) {
@@ -1057,15 +1237,36 @@ expressApp.post('/api/generate-itinerary', async (req, res) => {
             throw new Error('Empty itinerary received from Gemini API');
         }
 
-        console.log('Successfully generated itinerary');
+        // Clean the response text and try to parse as JSON
+        let parsedResponse;
+        try {
+            // Remove any potential markdown code block markers or extra text
+            const cleanedText = responseText
+                .replace(/```json\s*/g, '')
+                .replace(/```\s*$/g, '')
+                .trim();
+
+            parsedResponse = JSON.parse(cleanedText);
+
+            // Validate the required structure
+            if (!parsedResponse.itinerarySummary || !Array.isArray(parsedResponse.itinerarySummary.placesToVisit)) {
+                throw new Error('Invalid itinerary structure');
+            }
+        } catch (error) {
+            console.error('Invalid JSON from Gemini:', responseText);
+            throw new Error('Generated itinerary is not in valid JSON format');
+        }
+
+        console.log('Successfully generated itinerary:', parsedResponse);
 
         // Send the generated itinerary back to client
         res.json({
             success: true,
-            itinerary: responseText,
+            itinerary: parsedResponse,
             metadata: {
                 destination,
-                dates: { startDate, endDate },
+                startDate,
+                endDate,
                 numberOfDays,
                 budget,
                 travelers
@@ -1076,66 +1277,147 @@ expressApp.post('/api/generate-itinerary', async (req, res) => {
         console.error('Error generating itinerary:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to generate itinerary',
-            details: error.message
+            error: error.message || 'Failed to generate itinerary'
         });
     }
 });
 
 // Save itinerary endpoint
-expressApp.post('/api/save-itinerary', async (req, res) => {
+expressApp.post('/api/save-itinerary', requireAuth, async (req, res) => {
     try {
-        const { itineraryData, metadata, userId, isTemporary } = req.body;
+        const { itineraryData, metadata } = req.body;
+        const userId = req.body.userId;
 
-        if (!itineraryData || !metadata || !userId) {
+        if (!itineraryData || !metadata) {
             throw new Error('Missing required data');
         }
 
-        // Create a reference to the itineraries collection
-        const itinerariesRef = ref(db, 'itineraries');
-        const newItineraryRef = push(itinerariesRef);
+        // Parse the itinerary data if it's a string
+        const parsedItinerary = typeof itineraryData === 'string' ? JSON.parse(itineraryData) : itineraryData;
+        const itinerarySummary = parsedItinerary.itinerarySummary;
 
-        // Create itinerary data object
-        const saveData = {
-            itineraryData,
-            metadata,
-            userId,
-            isTemporary: isTemporary || false,
+        if (!itinerarySummary) {
+            throw new Error('Invalid itinerary format');
+        }
+
+        // Use the authenticated user's ID from the session
+        const authenticatedUserId = req.session.userId;
+
+        if (!authenticatedUserId) {
+            throw new Error('User not authenticated');
+        }
+
+        // Create a new itinerary ID
+        const itinerariesRef = ref(db, `itineraries/${authenticatedUserId}`);
+        const newItineraryRef = push(itinerariesRef);
+        const itineraryId = newItineraryRef.key;
+
+        // Extract places from itineraryData and structure them correctly
+        const places = {};
+        if (Array.isArray(itinerarySummary.placesToVisit)) {
+            itinerarySummary.placesToVisit.forEach((place, index) => {
+                const placeId = `place${index + 1}`;
+                places[placeId] = {
+                    day: place.day || `Day ${Math.floor(index / 3) + 1}`, // Fallback to calculating day if not provided
+                    name: place.name,
+                    imageUrl: place.imageUrl,
+                    visitTime: place.visitTime,
+                    entryFee: place.entryFee === 'Free' ? 0 : parseInt(place.entryFee.replace(/[^\d]/g, '')) || 0,
+                    description: place.description,
+                    facts: place.interestingFact,
+                    visitOrder: place.order || (index % 3) + 1 // Reset order for each day
+                };
+            });
+        }
+
+        // Create the itinerary record
+        const itineraryRecord = {
+            userId: authenticatedUserId,
+            destination: itinerarySummary.destination || metadata.destination,
+            startDate: metadata.startDate,
+            endDate: metadata.endDate,
+            travelers: metadata.travelers,
+            budget: metadata.budget,
+            places: places,
             createdAt: serverTimestamp(),
-            status: 'active',
-            id: newItineraryRef.key,
-            expiresAt: isTemporary ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null // 7 days expiry for temporary itineraries
+            status: 'active'
         };
 
         // Save to Firebase
-        await set(newItineraryRef, saveData);
-
-        // If it's a temporary itinerary, set up automatic deletion after 7 days
-        if (isTemporary) {
-            const deleteRef = ref(db, `itineraries/${newItineraryRef.key}`);
-            setTimeout(async () => {
-                try {
-                    await set(deleteRef, null);
-                    console.log(`Temporary itinerary ${newItineraryRef.key} deleted`);
-                } catch (error) {
-                    console.error('Error deleting temporary itinerary:', error);
-                }
-            }, 7 * 24 * 60 * 60 * 1000); // 7 days
-        }
+        await set(newItineraryRef, itineraryRecord);
 
         res.json({
             success: true,
-            message: isTemporary ? 'Itinerary saved temporarily' : 'Itinerary saved successfully',
-            itineraryId: newItineraryRef.key,
-            isTemporary
+            itineraryId: itineraryId,
+            message: 'Itinerary saved successfully'
         });
 
     } catch (error) {
         console.error('Error saving itinerary:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to save itinerary',
-            details: error.message
+            error: error.message || 'Failed to save itinerary'
+        });
+    }
+});
+
+// Get latest itinerary endpoint
+expressApp.post('/api/get-latest-itinerary', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        if (!userId) {
+            return res.status(400).json({ success: false, error: 'User ID is required' });
+        }
+
+        // Get reference to user's itineraries
+        const userItinerariesRef = ref(db, `itineraries/${userId}`);
+
+        try {
+            // Get the user's itineraries
+            const snapshot = await get(userItinerariesRef);
+
+            if (!snapshot.exists()) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'No itineraries found for this user'
+                });
+            }
+
+            // Convert snapshot to array and sort by timestamp
+            const itineraries = [];
+            snapshot.forEach((childSnapshot) => {
+                const itinerary = childSnapshot.val();
+                itineraries.push({
+                    ...itinerary,
+                    timestamp: itinerary.timestamp || itinerary.createdAt || Date.now()
+                });
+            });
+
+            // Sort by timestamp (newest first) and get the latest
+            const latestItinerary = itineraries.sort((a, b) => {
+                const timeA = a.timestamp || 0;
+                const timeB = b.timestamp || 0;
+                return timeB - timeA;
+            })[0];
+
+            res.json({
+                success: true,
+                itinerary: latestItinerary
+            });
+
+        } catch (error) {
+            console.error('Error reading from Firebase:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to read from database'
+            });
+        }
+
+    } catch (error) {
+        console.error('Error in get-latest-itinerary:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
         });
     }
 });
@@ -1145,43 +1427,45 @@ expressApp.get('/api/itineraries/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         const isTemp = userId.startsWith('anon_');
-        
+
         // Reference to itineraries
-        const itinerariesRef = ref(db, 'itineraries');
-        
-        // Query itineraries for this user
-        const userItinerariesQuery = query(
-            itinerariesRef,
-            orderByChild('userId'),
-            equalTo(userId)
-        );
+        const itinerariesRef = ref(db, `itineraries/${userId}`);
 
-        // Get the data
-        const snapshot = await get(userItinerariesQuery);
-        const itineraries = [];
+        // Get all itineraries for this user
+        const snapshot = await get(itinerariesRef);
 
-        if (snapshot.exists()) {
-            snapshot.forEach((childSnapshot) => {
-                const itinerary = childSnapshot.val();
-                // For temporary users, only show non-expired itineraries
-                if (isTemp) {
-                    const expiryDate = new Date(itinerary.expiresAt);
-                    if (expiryDate > new Date()) {
-                        itineraries.push({
-                            id: childSnapshot.key,
-                            ...itinerary
-                        });
-                    }
-                } else {
-                    itineraries.push({
-                        id: childSnapshot.key,
-                        ...itinerary
-                    });
-                }
+        if (!snapshot.exists()) {
+            return res.json({
+                success: true,
+                itineraries: []
             });
         }
 
-        res.json({ itineraries });
+        // Convert the snapshot to array and add IDs
+        const itineraries = Object.entries(snapshot.val()).map(([id, data]) => ({
+            id,
+            ...data,
+            metadata: {
+                destination: data.destination,
+                startDate: data.startDate,
+                endDate: data.endDate,
+                travelers: data.travelers,
+                budget: data.budget
+            }
+        }));
+
+        // Sort by timestamp, newest first
+        itineraries.sort((a, b) => {
+            const timeA = a.timestamp || a.createdAt || 0;
+            const timeB = b.timestamp || b.createdAt || 0;
+            return timeB - timeA;
+        });
+
+        res.json({
+            success: true,
+            itineraries
+        });
+
     } catch (error) {
         console.error('Error fetching itineraries:', error);
         res.status(500).json({
@@ -1192,16 +1476,16 @@ expressApp.get('/api/itineraries/:userId', async (req, res) => {
 });
 
 // Delete itinerary endpoint
-expressApp.delete('/api/itineraries/:itineraryId', async (req, res) => {
+expressApp.delete('/api/itineraries/:userId/:itineraryId', requireAuth, async (req, res) => {
     try {
-        const { itineraryId } = req.params;
-        
-        // Reference to the specific itinerary
-        const itineraryRef = ref(db, `itineraries/${itineraryId}`);
-        
+        const { userId, itineraryId } = req.params;
+
+        // Reference to the specific itinerary under the user's path
+        const itineraryRef = ref(db, `itineraries/${userId}/${itineraryId}`);
+
         // Get the itinerary data first to check ownership
         const snapshot = await get(itineraryRef);
-        
+
         if (!snapshot.exists()) {
             return res.status(404).json({
                 success: false,
@@ -1210,9 +1494,9 @@ expressApp.delete('/api/itineraries/:itineraryId', async (req, res) => {
         }
 
         const itinerary = snapshot.val();
-        
+
         // Check if the user owns this itinerary
-        if (req.session && req.session.userId && itinerary.userId !== req.session.userId) {
+        if (req.session && req.session.userId && userId !== req.session.userId) {
             return res.status(403).json({
                 success: false,
                 error: 'Not authorized to delete this itinerary'
@@ -1237,7 +1521,7 @@ expressApp.use((req, res) => {
     console.log('404 error for path:', req.path);
     console.log('Method:', req.method);
     console.log('Headers:', req.headers);
-    
+
     res.status(404).json({
         success: false,
         error: 'Page not found',
