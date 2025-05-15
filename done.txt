@@ -1,4 +1,1 @@
-flight data saved in firebase
-hotel data payment done datasave pending
-itinerary saved in database
-gemini done
+everything is completed.

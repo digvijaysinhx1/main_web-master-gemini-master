@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Bookings - GlobeTrail</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="text-xl font-bold text-blue-600">GlobeTrail</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-5 rounded-lg flex flex-col items-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <p class="mt-2 text-gray-600">Loading your bookings...</p>
+            </div>
+        </div>
+
+        <!-- Bookings Container -->
+        <div id="bookingsContainer" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">Your Bookings</h1>
+            
+            <!-- Filter Section -->
+            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div class="flex-1">
+                        <label for="statusFilter" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select id="statusFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md">
+                            <option value="all">All Bookings</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="pending">Pending</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="dateFilter" class="block text-sm font-medium text-gray-700">Date Range</label>
+                        <select id="dateFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md">
+                            <option value="all">All Time</option>
+                            <option value="upcoming">Upcoming</option>
+                            <option value="past">Past</option>
+                            <option value="thisMonth">This Month</option>
+                            <option value="lastMonth">Last Month</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings List -->
+            <div id="bookingsList" class="space-y-6">
+                <!-- Bookings will be dynamically inserted here -->
+            </div>
+
+            <!-- No Bookings Message -->
+            <div id="noBookingsMessage" class="hidden text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by booking your first trip!</p>
+                <div class="mt-6">
+                    <a href="/app/flight/flight.html" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Book a Flight
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorContainer" class="hidden bg-red-50 p-4 rounded-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Error</h3>
+                    <p id="errorMessage" class="mt-2 text-sm text-red-700"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <template id="bookingCardTemplate">
+        <div class="booking-card border p-4 rounded-lg shadow-md bg-white mb-4">
+            <h3 class="booking-reference font-semibold text-lg"></h3>
+            <p class="booking-status"></p>
+<span class="booking-payment-status"></span>
+<p class="booking-requests"></p>
+            <p class="booking-date text-sm text-gray-600"></p>
+            <p class="booking-hotel font-medium"></p>
+            <p class="booking-room text-sm"></p>
+            <p class="booking-guests text-sm text-gray-700"></p>
+            <p class="booking-price font-semibold text-blue-600"></p>
+            <p class="booking-guest text-sm text-gray-800"></p>
+
+            <button class="download-ticket mt-2 text-sm text-blue-500 hover:underline">Download Ticket</button>
+        </div>
+    </template>
+    
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js" type="module"></script>
+    <script src="/app/hotel_bookings/hotel_bookings.js" type="module"></script>
+</body>
+</html>

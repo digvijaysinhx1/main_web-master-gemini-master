@@ -15,6 +15,49 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// Add this to the top of your file with other imports
+let map;
+let placesService;
+const GOOGLE_API_KEY = 'AIzaSyB_dyM2dfau2b6vXtoWtR04mlNbTD38cso'; // Using your existing Google Maps API key
+
+// Initialize Google Maps and Places service
+function initGoogleServices() {
+    // Create a dummy map (required for Places service)
+    map = new google.maps.Map(document.createElement('div'));
+    // Initialize Places service
+    placesService = new google.maps.places.PlacesService(map);
+}
+
+// Modified getPlaceImage function using Places service
+async function getPlaceImage(placeName) {
+    if (!placesService) {
+        initGoogleServices();
+    }
+
+    return new Promise((resolve, reject) => {
+        const request = {
+            query: `${placeName} india landmark`,
+            fields: ['photos', 'formatted_address', 'name', 'rating', 'opening_hours', 'geometry'],
+        };
+
+        placesService.findPlaceFromQuery(request, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0] && results[0].photos) {
+                const photoUrl = results[0].photos[0].getUrl({maxWidth: 800, maxHeight: 600});
+                resolve(photoUrl);
+            } else {
+                // Fallback images based on place type
+                if (placeName.toLowerCase().includes('temple')) {
+                    resolve('https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=ATJ83zj5vP_w9MjsGWxwKQxqhqq4I6b6QTkEI_8akGQZNKg6qKjxc9C1h8uhKM_nkH5KwpLgHJsLnqo2qICIFu7GQ9b-2QRqRQ&key=' + GOOGLE_API_KEY);
+                } else if (placeName.toLowerCase().includes('palace')) {
+                    resolve('https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=ATJ83ziUz2kY5FkQZ9j8IUjK9bqq4I6b6QTkEI_8akGQZNKg6qKjxc9C1h8uhKM_nkH5KwpLgHJsLnqo2qICIFu7GQ9b-2QRqRQ&key=' + GOOGLE_API_KEY);
+                } else {
+                    resolve('https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=ATJ83zjUz2kY5FkQZ9j8IUjK9bqq4I6b6QTkEI_8akGQZNKg6qKjxc9C1h8uhKM_nkH5KwpLgHJsLnqo2qICIFu7GQ9b-2QRqRQ&key=' + GOOGLE_API_KEY);
+                }
+            }
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const itineraryId = urlParams.get('id');
@@ -78,7 +121,7 @@ async function loadItinerary(itineraryId) {
     }
 }
 
-function displayItinerary(metadata, places) {
+async function displayItinerary(metadata, places) {
     // Show itinerary container
     document.getElementById('itineraryContainer').classList.remove('hidden');
 
@@ -86,8 +129,8 @@ function displayItinerary(metadata, places) {
     document.getElementById('tripTitle').textContent = `Trip to ${metadata.destination}`;
     document.getElementById('destination').textContent = metadata.destination;
     document.getElementById('dates').textContent = `${formatDate(metadata.startDate)} - ${formatDate(metadata.endDate)}`;
-    document.getElementById('travelers').textContent = `${metadata.travelers}`;
-    document.getElementById('budget').textContent = `Budget: ${metadata.budget}`;
+    document.getElementById('travelers').textContent = `${metadata.travelers} Travelers`;
+    document.getElementById('budget').textContent = `Budget: ₹${metadata.budget}`;
 
     // Display timeline
     const timeline = document.getElementById('timeline');
@@ -106,41 +149,56 @@ function displayItinerary(metadata, places) {
     });
 
     // Sort days and display places
-    Object.keys(placesByDay)
-        .sort((a, b) => {
-            const dayA = parseInt(a.split(' ')[1]);
-            const dayB = parseInt(b.split(' ')[1]);
-            return dayA - dayB;
-        })
-        .forEach((day, dayIndex) => {
-            // Add day header
-            const dayHeader = document.createElement('div');
-            dayHeader.className = 'w-full text-center py-4 font-bold text-xl text-primary-600';
-            dayHeader.textContent = day;
-            timeline.appendChild(dayHeader);
+    for (const day of Object.keys(placesByDay).sort((a, b) => {
+        const dayA = parseInt(a.split(' ')[1]);
+        const dayB = parseInt(b.split(' ')[1]);
+        return dayA - dayB;
+    })) {
+        const dayIndex = parseInt(day.split(' ')[1]) - 1;
+        
+        // Add day header
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'w-full text-center py-4 font-bold text-xl text-primary-600';
+        dayHeader.textContent = day;
+        timeline.appendChild(dayHeader);
 
-            // Sort places within the day by visitOrder
-            placesByDay[day]
-                .sort((a, b) => (a.visitOrder || 0) - (b.visitOrder || 0))
-                .forEach((place, index) => {
-                    const card = template.content.cloneNode(true);
-                    
-                    // Set place details
-                    card.querySelector('.place-name').textContent = place.name;
-                    card.querySelector('.place-image').src = place.imageUrl || 'default-place-image.jpg';
-                    card.querySelector('.visit-time').textContent = formatVisitTime(place.visitTime);
-                    card.querySelector('.entry-fee').textContent = place.entryFee ? `Entry Fee: ₹${place.entryFee}` : 'Free Entry';
-                    card.querySelector('.place-description').textContent = place.description;
-                    card.querySelector('.place-facts p').textContent = place.facts || 'No additional facts available';
+        // Sort places within the day by visitOrder
+        const sortedPlaces = placesByDay[day].sort((a, b) => (a.visitOrder || 0) - (b.visitOrder || 0));
+        
+        // Fetch images for all places in this day
+        const placeImages = await Promise.all(
+            sortedPlaces.map(place => getPlaceImage(place.name))
+        );
 
-                    // Add animation delay based on index
-                    const timelineItem = card.querySelector('.timeline-item');
-                    timelineItem.style.animationDelay = `${(dayIndex * placesByDay[day].length + index) * 0.1}s`;
-                    timelineItem.classList.add('fade-in');
+        // Display places with their images
+        sortedPlaces.forEach((place, index) => {
+            const card = template.content.cloneNode(true);
+            
+            // Set place details
+            card.querySelector('.place-name').textContent = place.name;
+            
+            // Set place image
+            const placeImage = card.querySelector('.place-image');
+            placeImage.src = placeImages[index];
+            placeImage.alt = place.name;
+            
+            // Add loading state to image
+            placeImage.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+            placeImage.onload = () => placeImage.classList.remove('opacity-0');
+            
+            card.querySelector('.visit-time').textContent = formatVisitTime(place.visitTime);
+            card.querySelector('.entry-fee').textContent = place.entryFee ? `Entry Fee: ₹${place.entryFee}` : 'Free Entry';
+            card.querySelector('.place-description').textContent = place.description || 'Experience this amazing destination';
+            card.querySelector('.place-facts p').textContent = place.facts || 'No additional facts available';
 
-                    timeline.appendChild(card);
-                });
+            // Add animation delay based on index
+            const timelineItem = card.querySelector('.timeline-item');
+            timelineItem.style.animationDelay = `${(dayIndex * sortedPlaces.length + index) * 0.1}s`;
+            timelineItem.classList.add('fade-in');
+
+            timeline.appendChild(card);
         });
+    }
 }
 
 function formatDate(timestamp) {

@@ -585,7 +585,6 @@ document.addEventListener('DOMContentLoaded', async function () {
            const totalPrice = currentBooking.pricePerNight * nights * currentBooking.rooms;
 
             // Create booking data
-
             const payloadToSend = {
                 hotelId: currentBooking.hotelId,
                 hotelName: currentBooking.hotelName,

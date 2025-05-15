@@ -355,137 +355,160 @@
         <!-- Results Section -->
         <div id="searchResults" class="mt-8"></div>
 
-        <!-- Booking Process Sections -->
-        <div id="bookingProcess" class="hidden mt-8">
-            <!-- Step 1: Personal Information -->
+         <!-- Booking Process Sections -->
+         <div id="bookingProcess" class="hidden mt-8">
+            <!-- Personal Information Section -->
             <div id="personalInfo" class="booking-step">
-                <h2 class="text-2xl font-bold mb-6">Personal Information</h2>
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <form id="personalInfoForm" class="space-y-4">
+                <h2 class="text-2xl font-bold mb-4">Passenger Information</h2>
+                <form id="personalInfoForm" class="space-y-6">
+                    <!-- Passenger forms will be dynamically inserted here -->
+                    <div id="passengerForms"></div>
+
+                    <!-- Contact Information (for first passenger only) -->
+                    <div class="mt-6 border-t pt-6">
+                        <h3 class="font-bold mb-4">Contact Information</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-gray-700 mb-2">First Name</label>
-                                <input type="text" id="firstName" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input type="email" id="email" name="email" required class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                             </div>
                             <div>
-                                <label class="block text-gray-700 mb-2">Last Name</label>
-                                <input type="text" id="lastName" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 mb-2">Email</label>
-                                <input type="email" id="email" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 mb-2">Phone</label>
-                                <input type="tel" id="phone" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                                <input type="tel" id="phone" name="phone" required class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                             </div>
                         </div>
-                        <button type="submit" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Continue to Seat Selection</button>
-                    </form>
-                </div>
-            </div>
+                    </div>
 
-            <!-- Step 2: Seat Selection -->
-            <div id="seatSelection" class="booking-step hidden">
-                <h2 class="text-2xl font-bold mb-6">Select Your Seat</h2>
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Class Selection</h3>
-                        <div class="flex space-x-4">
-                            <label class="flex items-center">
-                                <input type="radio" name="class" value="economy" checked class="mr-2">
-                                Economy
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="class" value="business" class="mr-2">
-                                Business
-                            </label>
-                        </div>
-                    </div>
-                    <div class="seat-legend">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: #f0f9ff; border: 1px solid #3b82f6;"></div>
-                            Business
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: #f9fafb; border: 1px solid #9ca3af;"></div>
-                            Economy
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: #3b82f6;"></div>
-                            Selected
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-6 gap-2 mb-6" id="seatMap">
-                        <!-- Seats will be dynamically generated here -->
-                    </div>
                     <div class="flex justify-between mt-6">
-                        <button class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600" onclick="showBookingStep('personalInfo')">Back</button>
-                        <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" onclick="showBookingStep('payment')">Continue to Payment</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 3: Payment -->
-            <div id="payment" class="booking-step hidden">
-                <h2 class="text-2xl font-bold mb-6">Payment Details</h2>
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <form id="paymentForm" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="col-span-2">
-                                <label class="block text-gray-700 mb-2">Card Number</label>
-                                <input type="text" id="cardNumber" required pattern="[0-9\s]{13,19}" maxlength="19" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 mb-2">Expiry Date</label>
-                                <input type="text" id="expiryDate" required placeholder="MM/YY" maxlength="5" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 mb-2">CVV</label>
-                                <input type="text" id="cvv" required pattern="[0-9]{3,4}" maxlength="4" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-gray-700 mb-2">Card Holder Name</label>
-                                <input type="text" id="cardName" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            </div>
-                        </div>
-                        <div class="flex justify-between mt-6">
-                            <button type="button" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600" onclick="showBookingStep('seatSelection')">Back</button>
-                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Pay Now</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Step 4: Confirmation -->
-            <div id="confirmation" class="booking-step hidden">
-                <div id="successMessage" class="hidden">
-                    <div class="text-center">
-                        <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <h2 class="text-2xl font-bold text-green-600 mb-4">Booking Confirmed! 🎉</h2>
-                        <p class="text-gray-600 mb-4">Your booking reference: <strong id="bookingReference"></strong></p>
-                        <div id="bookingDetails" class="bg-gray-50 rounded-lg p-6 mb-6 text-left">
-                            <!-- Booking details will be populated by JavaScript -->
-                        </div>
-                        <button onclick="window.location.reload()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                            Book Another Flight
+                        <button type="button" onclick="showBookingStep('search')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                            Back
+                        </button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            Continue to Seat Selection
                         </button>
                     </div>
+                </form>
+            </div>
+
+            <!-- Seat Selection Section -->
+            <div id="seatSelection" class="booking-step hidden">
+                <h2 class="text-2xl font-bold mb-4">Select Your Seats</h2>
+                <div class="mb-4">
+                    <p class="text-gray-600 mb-2">Please select <span id="requiredSeats"></span> seat(s)</p>
+                    <p class="text-sm text-gray-500">Selected seats: <span id="selectedSeatsDisplay"></span></p>
                 </div>
-                <div id="failureMessage" class="hidden">
-                    <div class="text-center">
-                        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        <h2 class="text-2xl font-bold text-red-600 mb-4">Payment Failed</h2>
-                        <p class="text-gray-600 mb-6">There was an error processing your payment. Please try again.</p>
-                        <button onclick="showBookingStep('payment')" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Retry Payment</button>
+                
+                <div class="mb-6">
+                    <div class="flex space-x-4 mb-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="class" value="economy" checked class="form-radio">
+                            <span class="ml-2">Economy</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="class" value="business" class="form-radio">
+                            <span class="ml-2">Business</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="class" value="first" class="form-radio">
+                            <span class="ml-2">First Class</span>
+                        </label>
                     </div>
                 </div>
+
+                <div id="seatMap" class="grid grid-cols-6 gap-2 mb-6">
+                    <!-- Seats will be dynamically generated -->
+                </div>
+
+                <div class="flex justify-between">
+                    <button type="button" onclick="showBookingStep('personalInfo')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                        Back
+                    </button>
+                    <button type="button" onclick="showBookingStep('payment')" id="continueToPayment" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" disabled>
+                        Continue to Payment
+                    </button>
+                </div>
             </div>
-        </div>
+
+            <!-- Payment Section -->
+            <div id="payment" class="booking-step hidden">
+                <h2 class="text-2xl font-bold mb-6">Payment Details</h2>
+                <form id="paymentForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label for="cardNumber" class="block text-sm font-medium text-gray-700">Card Number</label>
+                            <input type="text" id="cardNumber" required 
+                                placeholder="1234 5678 9012 3456" 
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="expiryDate" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                            <input type="text" id="expiryDate" required 
+                                placeholder="MM/YY" 
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="cvv" class="block text-sm font-medium text-gray-700">CVV</label>
+                            <input type="text" id="cvv" required 
+                                placeholder="123" 
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="col-span-2">
+                            <label for="cardName" class="block text-sm font-medium text-gray-700">Card Holder Name</label>
+                            <input type="text" id="cardName" required 
+                                placeholder="Name as shown on card"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-6">
+                        <button type="button" onclick="showBookingStep('seatSelection')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                            Back
+                        </button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            Pay Now
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Confirmation Section -->
+            <div id="confirmation" class="booking-step hidden">
+                <div id="successMessage" class="mb-8">
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6">
+                        <strong class="font-bold">Success!</strong>
+                        <p>Your flight has been booked successfully.</p>
+                        <p class="text-sm">Booking Reference: <span id="bookingReference" class="font-mono"></span></p>
+                    </div>
+                </div>
+
+                <div id="failureMessage" class="mb-8 hidden">
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+                        <strong class="font-bold">Payment Failed</strong>
+                        <p>There was an error processing your payment. Please try again.</p>
+                    </div>
+                    <button onclick="showBookingStep('payment')" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Try Again
+                    </button>
+                </div>
+
+                <!-- Booking Details -->
+                <div id="bookingDetails" class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">Booking Details</h3>
+                    <!-- Details will be populated dynamically -->
+                </div>
+
+                <!-- Download/Share Buttons -->
+                <div class="flex justify-between mt-6">
+                    <button onclick="window.print()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Ticket
+                    </button>
+                    <button onclick="window.location.href='/'" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Book Another Flight
+                    </button>
+                </div>
+            </div>
 
         <!-- Itinerary Section -->
         <div id="itinerary" class="itinerary hidden">

@@ -44,6 +44,7 @@ class FlightSearch {
         this.initializeAirportAutocomplete();
         this.initializeCalendars();
         this.initializeBookingProcess();
+        this.initializePaymentForm();
     }
 
     setupEventListeners() {
@@ -472,43 +473,47 @@ class FlightSearch {
     }
 
     handleBooking(flightDetails) {
-        firebase.auth().onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = '/login';
-                return;
-            }
+        // Store flight details in current booking
+        this.currentBooking = {
+            ...this.currentBooking,
+            ...flightDetails,
+            selectedSeats: [], // Reset selected seats
+            passengerDetails: [] // Reset passenger details
+        };
 
-            this.currentBooking = {
-                ...flightDetails,
-                passengerDetails: null,
-                selectedSeat: null,
-                isReturn: !!flightDetails.isReturn
-            };
+        // Hide search results
+        document.getElementById('searchResults').classList.add('hidden');
+        
+        // Show booking process
+        const bookingProcess = document.getElementById('bookingProcess');
+        bookingProcess.classList.remove('hidden');
 
-            // Show booking process
-            document.getElementById('searchResults').classList.add('hidden');
-            document.getElementById('bookingProcess').classList.remove('hidden');
-            this.showBookingStep('personalInfo');
-
-            // Update booking summary
-            const summaryHTML = `
-                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                    <h3 class="font-bold mb-2">${flightDetails.isReturn ? 'Return ' : ''}Flight Details</h3>
-                    <p><strong>Flight:</strong> ${flightDetails.airline} ${flightDetails.flightNumber}</p>
-                    <p><strong>${flightDetails.isReturn ? 'Return ' : ''}Date:</strong> ${new Date(flightDetails.departure).toLocaleDateString()}</p>
-                    <p><strong>Route:</strong> ${flightDetails.from} → ${flightDetails.to}</p>
-                    <p><strong>Price:</strong> ₹${Math.round(flightDetails.price).toLocaleString('en-IN')}</p>
-                </div>
-            `;
-            document.getElementById('bookingDetails').innerHTML = summaryHTML;
-        });
+        // Show personal information step
+        this.showBookingStep('personalInfo');
     }
 
     showBookingStep(step) {
+        console.log('Showing step:', step); // Debug log
+        
         // Hide all steps
-        document.querySelectorAll('.booking-step').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.booking-step').forEach(el => {
+            el.classList.add('hidden');
+            console.log('Hiding:', el.id); // Debug log
+        });
+        
         // Show requested step
-        document.getElementById(step).classList.remove('hidden');
+        const stepElement = document.getElementById(`${step}`);
+        if (stepElement) {
+            console.log('Found step element:', stepElement.id); // Debug log
+            stepElement.classList.remove('hidden');
+            
+            // If showing seat selection, update the display
+            if (step === 'seatSelection') {
+                this.updateSeatSelectionDisplay();
+            }
+        } else {
+            console.error('Step element not found:', step); // Debug log
+        }
     }
 
     initializeBookingProcess() {
@@ -516,117 +521,69 @@ class FlightSearch {
         this.initializeSeatMap();
 
         // Personal Information Form
-        document.getElementById('personalInfoForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.currentBooking.passengerDetails = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value
-            };
-            this.showBookingStep('seatSelection');
-        });
+        const personalInfoForm = document.getElementById('personalInfoForm');
+        if (personalInfoForm) {
+            personalInfoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const numPassengers = parseInt(document.getElementById('adults').value) || 1;
+                const passengerDetails = [];
 
-        // Payment Form Validation
-        const cardNumber = document.getElementById('cardNumber');
-        const expiryDate = document.getElementById('expiryDate');
-        const cvv = document.getElementById('cvv');
+                // Collect information for each passenger
+                for (let i = 1; i <= numPassengers; i++) {
+                    const passengerInfo = {
+                        firstName: document.getElementById(`firstName${i}`).value,
+                        lastName: document.getElementById(`lastName${i}`).value,
+                        email: i === 1 ? document.getElementById('email').value : '', // Primary email for first passenger
+                        phone: i === 1 ? document.getElementById('phone').value : '', // Primary phone for first passenger
+                        seat: this.currentBooking.selectedSeats[i-1] || '' // Assign selected seat to each passenger
+                    };
+                    passengerDetails.push(passengerInfo);
+                }
 
-        // Format card number with spaces
-        cardNumber.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-            if (value.length > 16) value = value.slice(0, 16); // Keep only first 16 digits
-
-            // Add space after every 4 digits
-            const parts = [];
-            for (let i = 0; i < value.length; i += 4) {
-                parts.push(value.slice(i, i + 4));
-            }
-            e.target.value = parts.join(' ');
-        });
-
-        // Format expiry date (MM/YY)
-        expiryDate.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 4) value = value.slice(0, 4);
-            if (value.length > 2) {
-                value = value.slice(0, 2) + '/' + value.slice(2);
-            }
-            e.target.value = value;
-        });
-
-        // Validate expiry date
-        expiryDate.addEventListener('blur', (e) => {
-            const value = e.target.value;
-            const [month, year] = value.split('/');
-            const now = new Date();
-            const currentYear = now.getFullYear() % 100;
-            const currentMonth = now.getMonth() + 1;
-
-            if (month > 12 || month < 1) {
-                alert('Invalid month');
-                e.target.value = '';
-                return;
-            }
-
-            if (year < currentYear || (year == currentYear && month < currentMonth)) {
-                alert('Card has expired');
-                e.target.value = '';
-                return;
-            }
-        });
-
-        // Format CVV
-        cvv.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 4) value = value.slice(0, 4);
-            e.target.value = value;
-        });
-
-        // Payment Form Submission
-        document.getElementById('paymentForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // Validate all fields are filled
-            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-            const expiryDate = document.getElementById('expiryDate').value;
-            const cvv = document.getElementById('cvv').value;
-            const cardName = document.getElementById('cardName').value;
-
-            if (cardNumber.length !== 16) {
-                alert('Please enter a valid 16-digit card number');
-                return;
-            }
-
-            if (!expiryDate.match(/^\d{2}\/\d{2}$/)) {
-                alert('Please enter a valid expiry date (MM/YY)');
-                return;
-            }
-
-            if (cvv.length < 3) {
-                alert('Please enter a valid CVV');
-                return;
-            }
-
-            if (cardName.trim().length < 3) {
-                alert('Please enter the cardholder name');
-                return;
-            }
-
-            this.processPayment({
-                cardNumber: cardNumber,
-                expiryDate: expiryDate,
-                cvv: cvv,
-                cardName: cardName
+                this.currentBooking.passengerDetails = passengerDetails;
+                
+                // Show seat selection step
+                this.showBookingStep('seatSelection');
             });
-        });
+        }
 
-        // Initialize seat selection handlers
-        document.querySelectorAll('input[name="class"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                this.updateSeatMap(e.target.value);
+        // Add event listener for passenger count changes
+        const adultsInput = document.getElementById('adults');
+        if (adultsInput) {
+            adultsInput.addEventListener('change', (e) => {
+                const numPassengers = parseInt(e.target.value) || 1;
+                this.updatePassengerForms(numPassengers);
+                
+                // Clear existing seat selections if number of passengers changes
+                this.currentBooking.selectedSeats = [];
+                document.querySelectorAll('.seat.selected').forEach(seat => {
+                    seat.classList.remove('selected', 'bg-blue-500', 'text-white');
+                });
             });
-        });
+        }
+    }
+
+    updatePassengerForms(numPassengers) {
+        const passengerFormsContainer = document.getElementById('passengerForms');
+        passengerFormsContainer.innerHTML = '';
+
+        for (let i = 1; i <= numPassengers; i++) {
+            const passengerForm = document.createElement('div');
+            passengerForm.innerHTML = `
+                <h3 class="font-bold mb-2">Passenger ${i}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="firstName${i}" class="block text-sm font-medium text-gray-700">First Name</label>
+                        <input type="text" id="firstName${i}" name="firstName${i}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="lastName${i}" class="block text-sm font-medium text-gray-700">Last Name</label>
+                        <input type="text" id="lastName${i}" name="lastName${i}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                </div>
+            `;
+            passengerFormsContainer.appendChild(passengerForm);
+        }
     }
 
     initializeSeatMap() {
@@ -647,100 +604,199 @@ class FlightSearch {
         }
     }
 
-    selectSeat(seatNumber) {
-        // Remove previous selection
-        document.querySelectorAll('.seat.selected').forEach(seat => {
-            seat.classList.remove('selected', 'bg-blue-500', 'text-white');
-        });
+    updateSeatSelectionDisplay() {
+        const selectedSeatsDisplay = document.getElementById('selectedSeatsDisplay');
+        const requiredSeats = document.getElementById('requiredSeats');
+        const continueButton = document.getElementById('continueToPayment');
+        const numPassengers = parseInt(document.getElementById('adults').value) || 1;
 
-        // Select new seat
-        const seatElement = Array.from(document.querySelectorAll('.seat')).find(el => el.textContent === seatNumber);
-        if (seatElement) {
-            seatElement.classList.add('selected', 'bg-blue-500', 'text-white');
-            this.currentBooking.selectedSeat = seatNumber;
-            // Store selected class
-            this.currentBooking.class = document.querySelector('input[name="class"]:checked')?.value || 'economy';
+        // Update the required seats text
+        requiredSeats.textContent = numPassengers;
+
+        // Update selected seats display
+        selectedSeatsDisplay.textContent = this.currentBooking.selectedSeats.join(', ') || 'None';
+
+        // Enable/disable continue button based on seat selection
+        if (this.currentBooking.selectedSeats.length === numPassengers) {
+            continueButton.removeAttribute('disabled');
+            continueButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            continueButton.setAttribute('disabled', 'true');
+            continueButton.classList.add('opacity-50', 'cursor-not-allowed');
         }
     }
 
-    updateSeatMap(classType) {
-        const seatMap = document.getElementById('seatMap');
-        const seats = seatMap.querySelectorAll('.seat');
-
-        // Store the selected class
-        this.currentBooking.class = classType;
-
-        if (classType === 'business') {
-            // First 2 rows are business class
-            seats.forEach((seat, index) => {
-                if (index < 12) {
-                    seat.classList.add('business');
-                    seat.classList.remove('economy', 'disabled');
-                } else {
-                    seat.classList.add('disabled');
-                    seat.classList.remove('selected', 'bg-blue-500', 'text-white');
-                    if (this.currentBooking && this.currentBooking.selectedSeat === seat.textContent) {
-                        this.currentBooking.selectedSeat = null;
-                    }
-                }
-            });
-        } else {
-            // Economy class
-            seats.forEach((seat, index) => {
-                if (index >= 12) {
-                    seat.classList.remove('disabled', 'business');
-                    seat.classList.add('economy');
-                } else {
-                    seat.classList.add('disabled');
-                    seat.classList.remove('selected', 'bg-blue-500', 'text-white');
-                    if (this.currentBooking && this.currentBooking.selectedSeat === seat.textContent) {
-                        this.currentBooking.selectedSeat = null;
-                    }
-                }
-            });
+    selectSeat(seatNumber) {
+        const maxSeats = parseInt(document.getElementById('adults').value) || 1;
+        
+        // If seat is already selected, unselect it
+        const seatIndex = this.currentBooking.selectedSeats.indexOf(seatNumber);
+        if (seatIndex !== -1) {
+            this.currentBooking.selectedSeats.splice(seatIndex, 1);
+            const seatElement = Array.from(document.querySelectorAll('.seat')).find(el => el.textContent === seatNumber);
+            if (seatElement) {
+                seatElement.classList.remove('selected', 'bg-blue-500', 'text-white');
+            }
+            this.updateSeatSelectionDisplay();
+            return;
         }
+
+        // Check if maximum seats are already selected
+        if (this.currentBooking.selectedSeats.length >= maxSeats) {
+            alert(`You can only select ${maxSeats} seat(s) for ${maxSeats} passenger(s)`);
+            return;
+        }
+
+        // Add new seat selection
+        const seatElement = Array.from(document.querySelectorAll('.seat')).find(el => el.textContent === seatNumber);
+        if (seatElement) {
+            seatElement.classList.add('selected', 'bg-blue-500', 'text-white');
+            this.currentBooking.selectedSeats.push(seatNumber);
+            this.currentBooking.class = document.querySelector('input[name="class"]:checked')?.value || 'economy';
+            this.updateSeatSelectionDisplay();
+        }
+    }
+
+    initializePaymentForm() {
+        const paymentForm = document.getElementById('paymentForm');
+        const cardNumber = document.getElementById('cardNumber');
+        const expiryDate = document.getElementById('expiryDate');
+        const cvv = document.getElementById('cvv');
+
+        // Format card number as user types
+        cardNumber.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 16) value = value.slice(0, 16);
+            
+            // Add spaces after every 4 digits
+            const parts = [];
+            for (let i = 0; i < value.length; i += 4) {
+                parts.push(value.slice(i, i + 4));
+            }
+            e.target.value = parts.join(' ');
+        });
+
+        // Format expiry date as user types
+        expiryDate.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) value = value.slice(0, 4);
+            if (value.length > 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2);
+            }
+            e.target.value = value;
+        });
+
+        // Validate expiry date
+        expiryDate.addEventListener('blur', (e) => {
+            const value = e.target.value;
+            if (!value) return;
+
+            const [month, year] = value.split('/');
+            const currentYear = new Date().getFullYear() % 100;
+            const currentMonth = new Date().getMonth() + 1;
+
+            if (parseInt(month) > 12 || parseInt(month) < 1) {
+                alert('Invalid month');
+                e.target.value = '';
+                return;
+            }
+
+            if (parseInt(year) < currentYear || (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
+                alert('Card has expired');
+                e.target.value = '';
+                return;
+            }
+        });
+
+        // Format CVV
+        cvv.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 3) value = value.slice(0, 3);
+            e.target.value = value;
+        });
+
+        // Handle form submission
+        paymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Basic validation
+            const cardNumberValue = cardNumber.value.replace(/\s/g, '');
+            if (cardNumberValue.length !== 16) {
+                alert('Please enter a valid 16-digit card number');
+                return;
+            }
+
+            if (!expiryDate.value.match(/^\d{2}\/\d{2}$/)) {
+                alert('Please enter a valid expiry date (MM/YY)');
+                return;
+            }
+
+            if (cvv.value.length !== 3) {
+                alert('Please enter a valid 3-digit CVV');
+                return;
+            }
+
+            // Process payment
+            try {
+                await this.processPayment({
+                    cardNumber: cardNumberValue,
+                    expiryDate: expiryDate.value,
+                    cvv: cvv.value,
+                    cardName: document.getElementById('cardName').value
+                });
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed. Please try again.');
+            }
+        });
     }
 
     async processPayment(paymentDetails) {
         // Show loading state
         this.showLoading(true);
-        
-        try {
-            // Simulate payment processing
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Generate booking reference
-            const bookingReference = 'BK' + Date.now();
-            this.currentBooking.bookingReference = bookingReference;
 
-            // Get selected class
-            const selectedClass = document.querySelector('input[name="class"]:checked')?.value || 'economy';
+        try {
+            // Generate booking reference
+            const bookingRef = 'BK' + Date.now();
 
             // Create booking data
             const bookingData = {
-                reference: bookingReference,
-                timestamp: new Date().toISOString(),
+                reference: bookingRef,
                 flightDetails: {
                     airline: this.currentBooking.airline,
                     flightNumber: this.currentBooking.flightNumber,
                     from: this.currentBooking.from,
                     to: this.currentBooking.to,
                     departure: this.currentBooking.departure,
-                    class: selectedClass,
-                    seat: this.currentBooking.selectedSeat || 'Not Selected'
+                    price: this.currentBooking.price,
+                    class: this.currentBooking.class
                 },
                 passengerDetails: this.currentBooking.passengerDetails,
+                selectedSeats: this.currentBooking.selectedSeats,
                 paymentDetails: {
-                    amount: this.currentBooking.price,
-                    currency: 'INR',
-                    cardLastFour: paymentDetails.cardNumber.slice(-4),
-                    cardType: this.getCardType(paymentDetails.cardNumber)
+                    last4: paymentDetails.cardNumber.slice(-4),
+                    cardName: paymentDetails.cardName,
+                    amount: this.currentBooking.price
                 },
-                status: 'confirmed'
+                status: 'confirmed',
+                timestamp: new Date().toISOString()
             };
 
-            // Save to Firebase
-            await this.saveBookingToFirebase(bookingData);
+            // Try to save to Firebase first
+            try {
+                await this.saveToFirebase(bookingData);
+            } catch (firebaseError) {
+                console.error('Firebase save failed:', firebaseError);
+                // If Firebase fails, save to localStorage as backup
+                this.saveToLocalStorage(bookingData);
+            }
+
+            // Store current booking for confirmation
+            this.currentBooking.reference = bookingRef;
+            localStorage.setItem('currentBooking', JSON.stringify(bookingData));
+            
+            // Show confirmation
+            this.showBookingStep('confirmation');
             this.showSuccessMessage();
         } catch (error) {
             console.error('Payment processing error:', error);
@@ -750,43 +806,47 @@ class FlightSearch {
         }
     }
 
-    getCardType(cardNumber) {
-        // Basic card type detection
-        const firstDigit = cardNumber.charAt(0);
-        const firstTwoDigits = parseInt(cardNumber.substr(0, 2));
-
-        if (firstDigit === '4') return 'Visa';
-        if (firstTwoDigits >= 51 && firstTwoDigits <= 55) return 'MasterCard';
-        if (firstTwoDigits === 34 || firstTwoDigits === 37) return 'American Express';
-        return 'Unknown';
-    }
-
-    async saveBookingToFirebase(bookingData) {
+    async saveToFirebase(bookingData) {
         try {
-            // Get reference to the bookings collection
-            const bookingsRef = firebase.database().ref('bookings');
+            // Initialize Firebase if not already initialized
+            if (!firebase.apps.length) {
+                firebase.initializeApp({
+                    apiKey: "AIzaSyBOE7GXvXMrXQXVOWEbNJVXQwrHgNM5Vw4",
+                    authDomain: "globetrail-web.firebaseapp.com",
+                    databaseURL: "https://globetrail-web-default-rtdb.firebaseio.com",
+                    projectId: "globetrail-web",
+                    storageBucket: "globetrail-web.appspot.com",
+                    messagingSenderId: "1234567890",
+                    appId: "1:1234567890:web:abcdef123456"
+                });
+            }
 
-            // Add user information to booking data
+            // Get current user if logged in
             const user = firebase.auth().currentUser;
-            bookingData.userId = user.uid;
-            bookingData.userEmail = user.email;
+            if (user) {
+                bookingData.userId = user.uid;
+                bookingData.userEmail = user.email;
+            }
 
-            // Create a new booking entry
-            await bookingsRef.child(bookingData.reference).set(bookingData);
-
-            // Update user's bookings
-            const userBookingsRef = firebase.database().ref(`users/${user.uid}/bookings`);
-            await userBookingsRef.child(bookingData.reference).set(true);
-
-            // Update flight availability in main-db
-            const flightRef = firebase.database().ref(`flights/${bookingData.flightDetails.flightNumber}`);
-            await flightRef.transaction(flight => {
-                if (flight) {
-                    flight.availableSeats = (flight.availableSeats || 0) - 1;
-                }
-                return flight;
+            // Save to Realtime Database
+            const bookingsRef = firebase.database().ref('bookings');
+            const newBookingRef = bookingsRef.push();
+            
+            await newBookingRef.set({
+                ...bookingData,
+                createdAt: firebase.database.ServerValue.TIMESTAMP
             });
 
+            // If user is logged in, add to their bookings
+            if (user) {
+                const userBookingsRef = firebase.database().ref(`users/${user.uid}/bookings`);
+                await userBookingsRef.child(newBookingRef.key).set({
+                    bookingReference: bookingData.reference,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+
+            console.log('Booking saved to Firebase successfully');
             return true;
         } catch (error) {
             console.error('Firebase save error:', error);
@@ -794,39 +854,122 @@ class FlightSearch {
         }
     }
 
+    saveToLocalStorage(bookingData) {
+        try {
+            // Get existing bookings
+            const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            
+            // Add new booking
+            existingBookings.push(bookingData);
+            
+            // Save back to localStorage
+            localStorage.setItem('bookings', JSON.stringify(existingBookings));
+            
+            console.log('Booking saved to localStorage successfully');
+            return true;
+        } catch (error) {
+            console.error('LocalStorage save error:', error);
+            throw error;
+        }
+    }
+
+    async syncLocalBookingsToFirebase() {
+        try {
+            // Get bookings from localStorage
+            const localBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            if (!localBookings.length) return;
+
+            // Get current user
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            // Get database reference
+            const bookingsRef = firebase.database().ref('bookings');
+            const userBookingsRef = firebase.database().ref(`users/${user.uid}/bookings`);
+
+            // Create updates object for atomic operation
+            const updates = {};
+
+            // Add each booking
+            for (const booking of localBookings) {
+                const newBookingKey = bookingsRef.push().key;
+                updates[`/bookings/${newBookingKey}`] = {
+                    ...booking,
+                    userId: user.uid,
+                    userEmail: user.email,
+                    syncedFromLocal: true,
+                    syncedAt: firebase.database.ServerValue.TIMESTAMP
+                };
+                updates[`/users/${user.uid}/bookings/${newBookingKey}`] = {
+                    bookingReference: booking.reference,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                };
+            }
+
+            // Commit all updates atomically
+            await firebase.database().ref().update(updates);
+
+            // Clear local bookings after successful sync
+            localStorage.removeItem('bookings');
+            console.log('Local bookings synced to Firebase successfully');
+        } catch (error) {
+            console.error('Error syncing local bookings:', error);
+        }
+    }
+
     showSuccessMessage() {
-        this.showBookingStep('confirmation');
+        // Hide failure message if shown
         document.getElementById('failureMessage').classList.add('hidden');
         document.getElementById('successMessage').classList.remove('hidden');
 
         // Set booking reference
-        document.getElementById('bookingReference').textContent = this.currentBooking.bookingReference;
+        const bookingRef = 'BK' + Date.now();
+        document.getElementById('bookingReference').textContent = bookingRef;
 
         // Show booking details
         const details = document.getElementById('bookingDetails');
         details.innerHTML = `
-            <div class="space-y-3">
-                <p><strong>Passenger:</strong> ${this.currentBooking.passengerDetails.firstName} ${this.currentBooking.passengerDetails.lastName}</p>
-                <p><strong>Flight:</strong> ${this.currentBooking.airline} ${this.currentBooking.flightNumber}</p>
-                <p><strong>From:</strong> ${this.currentBooking.from}</p>
-                <p><strong>To:</strong> ${this.currentBooking.to}</p>
-                <p><strong>Departure:</strong> ${new Date(this.currentBooking.departure).toLocaleString('en-IN', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}</p>
-                <p><strong>Class:</strong> ${this.currentBooking.class.charAt(0).toUpperCase() + this.currentBooking.class.slice(1)}</p>
-                <p><strong>Seat:</strong> ${this.currentBooking.selectedSeat}</p>
-                <p><strong>Amount Paid:</strong> ₹${Math.round(this.currentBooking.price).toLocaleString('en-IN')}</p>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-600">Flight Details</h4>
+                        <p class="text-sm"><span class="font-medium">Airline:</span> ${this.currentBooking.airline}</p>
+                        <p class="text-sm"><span class="font-medium">Flight:</span> ${this.currentBooking.flightNumber}</p>
+                        <p class="text-sm"><span class="font-medium">Class:</span> ${this.currentBooking.class}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-600">Journey Details</h4>
+                        <p class="text-sm"><span class="font-medium">From:</span> ${this.currentBooking.from}</p>
+                        <p class="text-sm"><span class="font-medium">To:</span> ${this.currentBooking.to}</p>
+                        <p class="text-sm"><span class="font-medium">Date:</span> ${new Date(this.currentBooking.departure).toLocaleDateString()}</p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h4 class="font-semibold text-gray-600">Passenger Details</h4>
+                    ${this.currentBooking.passengerDetails.map((passenger, index) => `
+                        <div class="bg-gray-50 p-3 rounded mt-2">
+                            <p class="text-sm"><span class="font-medium">Passenger ${index + 1}:</span> ${passenger.firstName} ${passenger.lastName}</p>
+                            <p class="text-sm"><span class="font-medium">Seat:</span> ${this.currentBooking.selectedSeats[index]}</p>
+                            ${index === 0 ? `
+                                <p class="text-sm"><span class="font-medium">Email:</span> ${passenger.email}</p>
+                                <p class="text-sm"><span class="font-medium">Phone:</span> ${passenger.phone}</p>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="mt-4 pt-4 border-t">
+                    <h4 class="font-semibold text-gray-600">Payment Details</h4>
+                    <p class="text-sm"><span class="font-medium">Amount Paid:</span> ₹${Math.round(this.currentBooking.price).toLocaleString('en-IN')}</p>
+                    <p class="text-sm"><span class="font-medium">Booking Reference:</span> ${bookingRef}</p>
+                </div>
             </div>
         `;
     }
 
     showFailureMessage() {
-        this.showBookingStep('confirmation');
+        // Hide success message if shown
         document.getElementById('successMessage').classList.add('hidden');
         document.getElementById('failureMessage').classList.remove('hidden');
     }
